@@ -5,7 +5,7 @@
 // the 2nd parameter is an array of 'requires'
 // 'starter.controllers' is found in controllers.js
 
-angular.module('starter', ['ionic', 'starter.controllers'])
+angular.module('careapp', ['ionic', 'careapp.controllers'])
 
 .run(function($ionicPlatform) {
 
@@ -40,7 +40,7 @@ angular.module('starter', ['ionic', 'starter.controllers'])
         url: '/app',
         abstract: true,
         templateUrl: 'templates/menu_template.html',
-        controller: 'AppCtrl'
+        controller: 'AppController'
     })
 
     .state('app.passions', {
