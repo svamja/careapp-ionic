@@ -12,5 +12,30 @@ angular.module('careapp.controllers', [])
 
 })
 
-.controller('LoginController', function($scope, $stateParams) {
+.controller('LoginController', function($scope, $stateParams, $cordovaFacebook) {
+    $scope.fb_data = {};
+    $scope.fb_data.status = "uninitialized";
+
+    $scope.login = function() {
+
+        if (window.cordova.platformId == "browser") {
+            var appID = 1625721067678662;
+            var version = "v2.0"; // or leave blank and default is v2.0
+            facebookConnectPlugin.browserInit(appID, version);
+            // var appId = prompt("Enter FB Application ID", "");
+            // facebookConnectPlugin.browserInit(appId);
+        }
+
+        $cordovaFacebook.login(["public_profile", "email", "user_friends"]).then(
+            function(success) {
+                $scope.fb_data.status = "connected";
+                console.log(success);
+            },
+            function (error) {
+                $scope.fb_data.status = "connect_error";
+                console.log(error);
+            }
+        );
+    }
 });
+

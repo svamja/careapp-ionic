@@ -4,4 +4,15 @@
 node_modules/
 platforms/
 plugins/
+
+# all the www/lib dependencies are maintained in bower.json
+# these can be installed by 
+# bower install
+# and so ignoring these
 www/lib
+
+# cloning the github wiki inside the app for convinience
+# git clone https://github.com/svamja/careapp-ionic.wiki.git wiki
+# and so ignoring the folder here
+wiki
+

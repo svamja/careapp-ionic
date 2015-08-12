@@ -5,7 +5,7 @@
 // the 2nd parameter is an array of 'requires'
 // 'starter.controllers' is found in controllers.js
 
-angular.module('careapp', ['ionic', 'careapp.controllers'])
+angular.module('careapp', ['ionic', 'ngCordova', 'careapp.controllers'])
 
 .run(function($ionicPlatform) {
 
@@ -26,7 +26,11 @@ angular.module('careapp', ['ionic', 'careapp.controllers'])
 
 })
 
-.config(function($stateProvider, $urlRouterProvider) {
+.config(function($stateProvider, $urlRouterProvider, $cordovaFacebookProvider) {
+
+    // var appID = 1625721067678662;
+    // var version = "v2.0"; // or leave blank and default is v2.0
+    // $cordovaFacebookProvider.browserInit(appID, version);
 
     $stateProvider
 
