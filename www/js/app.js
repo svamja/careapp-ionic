@@ -76,6 +76,11 @@ angular.module('careapp', ['ionic', 'ngCordova', 'careapp.controllers'])
 
 
     // if none of the above states are matched, use this as the fallback
-    $urlRouterProvider.otherwise('/login');
+    if("is_logged_in" in window.localStorage) {
+        $urlRouterProvider.otherwise('/app/dashboard');
+    }
+    else {
+        $urlRouterProvider.otherwise('/login');
+    }
 
 });

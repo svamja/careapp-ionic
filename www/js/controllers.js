@@ -12,11 +12,12 @@ angular.module('careapp.controllers', [])
 
 })
 
-.controller('LoginController', function($scope, $stateParams, $cordovaFacebook) {
-    $scope.fb_data = {};
-    $scope.fb_data.status = "uninitialized";
+.controller('LoginController', function($scope, $state, $cordovaFacebook) {
+    $scope.fb_data = { status: "Not connected" };
 
     $scope.login = function() {
+
+        $scope.fb_data.status = "Connecting ..";
 
         if (window.cordova.platformId == "browser") {
             var appID = 1625721067678662;
@@ -28,11 +29,17 @@ angular.module('careapp.controllers', [])
 
         $cordovaFacebook.login(["public_profile", "email", "user_friends"]).then(
             function(success) {
-                $scope.fb_data.status = "connected";
-                console.log(success);
+                $scope.fb_data.status = "Connected";
+                window.localStorage.is_logged_in = 1;
+                if("has_passions" in window.localStorage) {
+                    $state.go("app.dashboard");
+                }
+                else {
+                    $state.go("app.passions");
+                }
             },
             function (error) {
-                $scope.fb_data.status = "connect_error";
+                $scope.fb_data.status = "Authentication Error";
                 console.log(error);
             }
         );

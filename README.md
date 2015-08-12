@@ -1,15 +1,21 @@
-# careapp-ionic
+# CareApp Project
 
-CareApp is an attempt to simplify joining hands for social causes that matters to us.
+CareApp is an attempt to simplify joining hands for social causes.
 
-It helps us discover other people who share our passions like feeding the poor, donation of books or helping seniors.
-And then let us communicate our drives or events so that others can participate in.
+It helps us discover other people who share our passions like food distribution, book donation or helping seniors,
+and let us communicate our drives or events so that others can participate.
 
-We can see the drives and events in our city organized by others and can participate in the same by contacting them.
+We can see the drives and events in our city organized by others and can participate in the same.
+
+### Technologies
+
+* ionic framework for Web, Android, iOS
+* PouchDB
+* CouchDB
 
 ### Wishlist
 
 * Appreciations and badges for good work
 * Raising of funds
-* Transparent declarations of social activities
+* Declarations of social activities
 

@@ -1,8 +1,14 @@
 <ion-view view-title="Login">
   <ion-content>
-    <div> TBD: Place FB Button Here </div>
-    <a href="#" ng-click="login()"> FB Login </a> <br/>
-    <span> {{fb_data.status}} </span> <br/>
-    <a href="#/app/passions"> Next </a> <br/>
+    <div>
+      <a class="btn-auth btn-facebook large" ng-click="login('facebook')">
+        Sign in with <b>Facebook</b>
+      </a>
+    </div>
+    <div class="center calm"> {{fb_data.status}} </div>
+    <div class="center">
+      Don't have Facebook account? <strong> Really?  </strong>
+      <a href="#"> Click this </a>
+    </div>
   </ion-content>
 </ion-view>
