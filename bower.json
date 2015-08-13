@@ -2,6 +2,9 @@
   "name": "CareApp",
   "private": "true",
   "dependencies": {
-    "ionic": "driftyco/ionic-bower#1.0.1"
+    "ionic": "driftyco/ionic-bower#1.0.1",
+    "pouchdb": "~4.0.0",
+    "ngCordova": "~0.1.20-alpha",
+    "pouchdb-quick-search": "~1.0.2"
   }
 }

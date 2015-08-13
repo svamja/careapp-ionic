@@ -3,14 +3,14 @@
     <div class="bar bar-header bar-positive item-input-inset">
         <ion-search 
             class="search-wrapper-light" 
-            placeholder="Search a user" 
+            placeholder="Type to select or create your passions" 
             min-length="1" 
             model="passions" 
             source="queryPassions(str)">
         </ion-search>
     </div>
     <div class="list">
-      <div ng-repeat="passion in passions" class="item">
+      <div ng-repeat="passion in passions" class="item" ng-click="add()">
             {{passion.name}}
       </div>
     </div>

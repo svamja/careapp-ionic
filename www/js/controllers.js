@@ -22,10 +22,53 @@ angular.module('careapp.controllers', [])
         $state.go("app.dashboard");
     }
 
+    var db = new PouchDB('careapp');
+    if(!("is_passions_loaded" in window.localStorage)) {
+        db.put({
+            "_id" : "food-for-all",
+            "name" : "Food for all",
+            "search_keywords" : "Feed Hungry, End Hunger"
+        });
+        db.put({
+            "_id" : "education-for-children",
+            "name" : "Education for Children, Child, Book"
+        });
+        db.put({
+            "_id" : "helping-seniors",
+            "name" : "Helping Seniors",
+            "search_keywords" : "Old Age"
+        });
+        db.put({
+            "_id" : "book-donation",
+            "name" : "Book Donation"
+        });
+        window.localStorage.is_passions_loaded = 1;
+    }
+
     $scope.queryPassions = function(str) {
         var deferer = $q.defer();
-        var result = [{id: 1, name: "Food for All"}, {id: 2, name: "Education of Children"}];
-        deferer.resolve(result);
+
+        db.search({
+            query: str,
+            fields: ['name', 'search_keywords'],
+            include_docs: true,
+            highlighting: true
+        })
+        .then(function(res) {
+            var passions = [];
+            for(i in res.rows) {
+                passion = {
+                    id: res.rows[i].doc._id,
+                    name: res.rows[i].doc.name
+                };
+                passions.push(passion);
+            }
+            deferer.resolve(passions);
+        });
+
+
+        // var result = [{id: 1, name: "Food for All"}, {id: 2, name: "Education of Children"}];
+        // deferer.resolve(result);
         return deferer.promise;
    };
 

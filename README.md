@@ -4,10 +4,10 @@
 
 CareApp is an attempt to simplify joining hands for social causes.
 
-It helps users to discover other people who share their passions like in their city
+It helps users to discover other people who share their passions in their city
 and let them communicate their drives or events so that others can participate.
 
-Also, The users can see the drives and events in their city organized by others and can participate in the same.
+Similary, the users can browse through the drives and events in their city and participate.
 
 ### Technologies
 
