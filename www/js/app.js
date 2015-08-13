@@ -1,5 +1,12 @@
 // CareApp
 
+var db = new PouchDB('careapp');
+var remotedb = new PouchDB('http://localhost:5984/careapp');
+
+db.sync(remotedb).on('complete', function() {
+    console.log("sync completed");
+});
+
 angular.module('careapp', ['ionic', 'ngCordova', 'careapp.controllers'])
 
 .run(function($ionicPlatform) {
@@ -88,18 +95,18 @@ angular.module('careapp', ['ionic', 'ngCordova', 'careapp.controllers'])
         scope: {
             getData: '&source',
             model: '=?',
-            search: '=?filter'
+            searchModel: '=?'
         },
         link: function(scope, element, attrs) {
             attrs.minLength = attrs.minLength || 0;
             scope.placeholder = attrs.placeholder || '';
-            scope.search = {value: ''};
+            // scope.search = {value: ''};
 
             if (attrs.class)
                 element.addClass(attrs.class);
 
             if (attrs.source) {
-                scope.$watch('search.value', function (newValue, oldValue) {
+                scope.$watch('searchModel.value', function (newValue, oldValue) {
                     if (newValue.length > attrs.minLength) {
                         scope.getData({str: newValue}).then(function (results) {
                             scope.model = results;
@@ -111,13 +118,13 @@ angular.module('careapp', ['ionic', 'ngCordova', 'careapp.controllers'])
             }
 
             scope.clearSearch = function() {
-                scope.search.value = '';
+                scope.searchModel.value = '';
             };
         },
         template: '<div class="item-input-wrapper">' +
                     '<i class="icon ion-android-search"></i>' +
-                    '<input type="search" placeholder="{{placeholder}}" ng-model="search.value">' +
-                    '<i ng-if="search.value.length > 0" ng-click="clearSearch()" class="icon ion-close"></i>' +
+                    '<input type="search" placeholder="{{placeholder}}" ng-model="searchModel.value">' +
+                    '<i ng-if="searchModel.value.length > 0" ng-click="clearSearch()" class="icon ion-close"></i>' +
                   '</div>'
     };
 })

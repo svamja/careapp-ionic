@@ -2,16 +2,23 @@
   <ion-content>
     <div class="bar bar-header bar-positive item-input-inset">
         <ion-search 
+            id="ion_search_passions"
             class="search-wrapper-light" 
             placeholder="Type to select or create your passions" 
             min-length="1" 
-            model="passions" 
+            model="queried_passions" 
+            search-model="searchModel"
             source="queryPassions(str)">
         </ion-search>
     </div>
     <div class="list">
-      <div ng-repeat="passion in passions" class="item" ng-click="add()">
+      <div ng-repeat="passion in queried_passions" class="item" ng-click="add(passion)">
             {{passion.name}}
+      </div>
+    </div>
+    <div class="list">
+      <div ng-repeat="passion in user_passions" class="item item-balanced">
+            {{passion.name}} <a href="#" ng-click="remove(passion)"> x </a>
       </div>
     </div>
 

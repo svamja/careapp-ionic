@@ -14,35 +14,15 @@ angular.module('careapp.controllers', [])
 .controller('PassionsController', function($scope, $state, $ionicHistory, $q) {
     $scope.ui_data = { button_text : "Skip" };
     $scope.ui_data.passions = [];
+    $scope.user_passions = [];
+    $scope.searchModel = { value: "book"};
+
     $scope.done = function() {
         $ionicHistory.nextViewOptions({
           // historyRoot: true,
           disableBack: true
         });
         $state.go("app.dashboard");
-    }
-
-    var db = new PouchDB('careapp');
-    if(!("is_passions_loaded" in window.localStorage)) {
-        db.put({
-            "_id" : "food-for-all",
-            "name" : "Food for all",
-            "search_keywords" : "Feed Hungry, End Hunger"
-        });
-        db.put({
-            "_id" : "education-for-children",
-            "name" : "Education for Children, Child, Book"
-        });
-        db.put({
-            "_id" : "helping-seniors",
-            "name" : "Helping Seniors",
-            "search_keywords" : "Old Age"
-        });
-        db.put({
-            "_id" : "book-donation",
-            "name" : "Book Donation"
-        });
-        window.localStorage.is_passions_loaded = 1;
     }
 
     $scope.queryPassions = function(str) {
@@ -70,7 +50,25 @@ angular.module('careapp.controllers', [])
         // var result = [{id: 1, name: "Food for All"}, {id: 2, name: "Education of Children"}];
         // deferer.resolve(result);
         return deferer.promise;
-   };
+    };
+
+    passion_ids = [];
+
+    $scope.add = function(passion) {
+        if(passion_ids.indexOf(passion.id) == -1) {
+            $scope.user_passions.push(passion);
+            passion_ids.push(passion.id);
+        }
+        $scope.searchModel.value = "";
+    }
+
+    $scope.remove = function(passion) {
+        var i = passion_ids.indexOf(passion.id);
+        if(i > -1) {
+            $scope.user_passions.splice(i, 1);
+            passion_ids.splice(i, 1);
+        }
+    }
 
 })
 
