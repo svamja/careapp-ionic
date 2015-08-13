@@ -1,6 +1,24 @@
 <ion-view view-title="Passions">
   <ion-content>
-    <div> TBD: Add passions </div>
-    <a href="#/app/location"> Next </a>
+    <div class="bar bar-header bar-positive item-input-inset">
+        <ion-search 
+            class="search-wrapper-light" 
+            placeholder="Search a user" 
+            min-length="1" 
+            model="passions" 
+            source="queryPassions(str)">
+        </ion-search>
+    </div>
+    <div class="list">
+      <div ng-repeat="passion in passions" class="item">
+            {{passion.name}}
+      </div>
+    </div>
+
   </ion-content>
+  <ion-footer-bar class="bar-positive tabs tabs-calm">
+    <a class="tab-item tab-item-active" ng-click="done()">
+      {{ui_data.button_text}}
+    </a>
+  </ion-footer-bar>
 </ion-view>

@@ -1,6 +1,6 @@
 angular.module('careapp.controllers', [])
 
-.controller('AppController', function($scope, $ionicModal, $timeout) {
+.controller('AppController', function($scope, $state) {
 
     // With the new view caching in Ionic, Controllers are only called
     // when they are recreated or on app start, instead of every page change.
@@ -9,6 +9,25 @@ angular.module('careapp.controllers', [])
     //$scope.$on('$ionicView.enter', function(e) {
     //});
 
+})
+
+.controller('PassionsController', function($scope, $state, $ionicHistory, $q) {
+    $scope.ui_data = { button_text : "Skip" };
+    $scope.ui_data.passions = [];
+    $scope.done = function() {
+        $ionicHistory.nextViewOptions({
+          // historyRoot: true,
+          disableBack: true
+        });
+        $state.go("app.dashboard");
+    }
+
+    $scope.queryPassions = function(str) {
+        var deferer = $q.defer();
+        var result = [{id: 1, name: "Food for All"}, {id: 2, name: "Education of Children"}];
+        deferer.resolve(result);
+        return deferer.promise;
+   };
 
 })
 
