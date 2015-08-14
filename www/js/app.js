@@ -1,11 +1,22 @@
 // CareApp
 
-var db = new PouchDB('careapp');
-var remotedb = new PouchDB('http://localhost:5984/careapp');
+var user_db = new PouchDB('careapp_user_db');
+var remote_user_db = new PouchDB('http://localhost:5984/careapp_user_db');
+user_id = 1;
 
-db.sync(remotedb).on('complete', function() {
-    console.log("sync completed");
+user_db
+.sync(remote_user_db, {
+    filter: 'app/by_user',
+    query_params: { "user_id": user_id }
+})
+.on('complete', function() {
+    console.log('sync complete');
+})
+.on('error', function() {
+    console.log('sync error');
 });
+
+var full_db = new PouchDB('http://localhost:5984/careapp_full_db');
 
 angular.module('careapp', ['ionic', 'ngCordova', 'careapp.controllers'])
 
@@ -49,16 +60,6 @@ angular.module('careapp', ['ionic', 'ngCordova', 'careapp.controllers'])
         controller: 'AppController'
     })
 
-    .state('app.passions', {
-        url: '/passions',
-        views: {
-            'mainContent': {
-                templateUrl: 'templates/passions.html',
-                controller: 'PassionsController'
-            }
-        }
-    })
-    
     .state('app.location', {
         url: '/location',
         views: {
@@ -75,7 +76,43 @@ angular.module('careapp', ['ionic', 'ngCordova', 'careapp.controllers'])
                 templateUrl: 'templates/dashboard.html'
             }
         }
-    });
+    })
+
+    .state('passions', {
+        url: '/passions',
+        abstract: true,
+        templateUrl: 'templates/menu_template.html',
+        controller: 'PassionsController'
+    })
+
+    .state('passions.add', {
+        url: '/add',
+        views: {
+            'mainContent': {
+                templateUrl: 'templates/passions.html',
+            }
+        }
+    })
+    
+    .state('passions.add_1', {
+        url: '/add_1',
+        views: {
+            'mainContent': {
+                templateUrl: 'templates/passion_add_1.html',
+            }
+        }
+    })
+    
+    .state('passions.add_2', {
+        url: '/add_2',
+        views: {
+            'mainContent': {
+                templateUrl: 'templates/passion_add_2.html',
+            }
+        }
+    })
+
+    ;
 
 
     // if none of the above states are matched, use this as the fallback

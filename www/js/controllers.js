@@ -28,11 +28,13 @@ angular.module('careapp.controllers', [])
     $scope.queryPassions = function(str) {
         var deferer = $q.defer();
 
-        db.search({
+        user_db.search({
             query: str,
             fields: ['name', 'search_keywords'],
+            filter: function (doc) {
+                return doc.type === 'passion'; // only index persons
+            },
             include_docs: true,
-            highlighting: true
         })
         .then(function(res) {
             var passions = [];
@@ -70,6 +72,40 @@ angular.module('careapp.controllers', [])
         }
     }
 
+    $scope.categories = [
+        { name: "Health and Poverty" },
+        { name: "Education" },
+        { name: "Security" },
+        { name: "Animal Protection" },
+        { name: "Environment" },
+        { name: "Other" }
+    ];
+
+    $scope.sub_categories = [
+        { name: "Food" },
+        { name: "Healthcare" },
+        { name: "Economic Aid" },
+        { name: "Socioeconomic Aid" },
+        { name: "Other" }
+    ];
+
+    $scope.new_passion = {};
+    $scope.add_passion = function() {
+        $scope.new_passion.name = $scope.searchModel.value;
+        $state.go("passions.add_1");
+    }
+
+    $scope.select_category = function(category) {
+        $scope.new_passion.category = category.name;
+        $state.go("passions.add_2");
+    }
+
+    $scope.select_sub_category = function(sub_category) {
+        $scope.new_passion.sub_category = sub_category.name;
+        console.log($scope.new_passion);
+        $state.go("passions.add");
+    }
+
 })
 
 .controller('LoginController', function($scope, $state, $cordovaFacebook) {
@@ -83,8 +119,6 @@ angular.module('careapp.controllers', [])
             var appID = 1625721067678662;
             var version = "v2.0"; // or leave blank and default is v2.0
             facebookConnectPlugin.browserInit(appID, version);
-            // var appId = prompt("Enter FB Application ID", "");
-            // facebookConnectPlugin.browserInit(appId);
         }
 
         $cordovaFacebook.login(["public_profile", "email", "user_friends"]).then(

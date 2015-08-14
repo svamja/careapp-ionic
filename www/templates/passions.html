@@ -5,7 +5,7 @@
             id="ion_search_passions"
             class="search-wrapper-light" 
             placeholder="Type to select or create your passions" 
-            min-length="1" 
+            min-length="2" 
             model="queried_passions" 
             search-model="searchModel"
             source="queryPassions(str)">
@@ -15,6 +15,10 @@
       <div ng-repeat="passion in queried_passions" class="item" ng-click="add(passion)">
             {{passion.name}}
       </div>
+    </div>
+    <div ng-if="queried_passions.length == 0 && searchModel.value.length > 2" class="row">
+      Not found?
+      <a href="#" ng-click="add_passion()"> Add </a>
     </div>
     <div class="list">
       <div ng-repeat="passion in user_passions" class="item item-balanced">
