@@ -1,10 +1,9 @@
 <ion-view view-title="Select Sub-Category">
   <ion-content>
-    <div class="row">
-      {{new_passion.category}}
-    </div>
-    <div class="row">
-      {{new_passion.name}}
+    <div class="list">
+      <div class="item">
+        Select sub-category for "<em>{{new_passion.name}}</em>"
+      </div>
     </div>
     <div class="list">
       <div ng-repeat="sub_category in sub_categories" class="item" ng-click="select_sub_category(sub_category)">

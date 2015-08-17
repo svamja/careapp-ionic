@@ -18,6 +18,11 @@ user_db
 
 var full_db = new PouchDB('http://localhost:5984/careapp_full_db');
 
+slug = function(str)
+{
+    return str.toLowerCase().replace(/[^\w ]+/g,'').replace(/ +/g,'-');
+};
+
 angular.module('careapp', ['ionic', 'ngCordova', 'careapp.controllers'])
 
 .run(function($ionicPlatform) {

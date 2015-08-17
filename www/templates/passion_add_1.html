@@ -1,7 +1,9 @@
 <ion-view view-title="Select Category">
   <ion-content>
-    <div class="row">
-      {{new_passion.name}}
+    <div class="list">
+      <div class="item">
+        Select category for "<em>{{new_passion.name}}</em>"
+      </div>
     </div>
     <div class="list">
       <div ng-repeat="category in categories" class="item" ng-click="select_category(category)">
