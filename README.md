@@ -14,6 +14,7 @@ Similary, the users can browse through the drives and events in their city and p
 * ionic framework
 * PouchDB
 * CouchDB
+* [Laravel](https://github.com/svamja/careapp-laravel)
 
 ### Wishlist
 
@@ -22,3 +23,6 @@ Similary, the users can browse through the drives and events in their city and p
 * Fund raising
 * Declarations of transactions
 
+### License
+
+Project CareApp is open-sourced software licensed under [GNU GPL v2](http://opensource.org/licenses/GPL-2.0).
