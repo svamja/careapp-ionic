@@ -1,5 +1,7 @@
 // CareApp
 
+var server_base_url = "http://careapp.localhost";
+
 var user_db = new PouchDB('careapp_user_db');
 var remote_user_db = new PouchDB('http://localhost:5984/careapp_user_db');
 user_id = 1;
@@ -23,7 +25,7 @@ slug = function(str)
     return str.toLowerCase().replace(/[^\w ]+/g,'').replace(/ +/g,'-');
 };
 
-angular.module('careapp', ['ionic', 'ngCordova', 'careapp.controllers'])
+angular.module('careapp', ['ionic', 'ngCordova', 'careapp.controllers', 'careapp.services'])
 
 .run(function($ionicPlatform) {
 

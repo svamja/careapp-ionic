@@ -11,7 +11,7 @@ angular.module('careapp.controllers', [])
 
 })
 
-.controller('LoginController', function($scope, $state, $cordovaFacebook) {
+.controller('LoginController', function($scope, $state, $cordovaFacebook, UserManager) {
     $scope.fb_data = { status: "Not connected" };
 
     $scope.login = function() {
@@ -25,14 +25,26 @@ angular.module('careapp.controllers', [])
         }
 
         $cordovaFacebook.login(["public_profile", "email", "user_friends"]).then(
-            function(success) {
-                $scope.fb_data.status = "Connected";
-                window.localStorage.is_logged_in = 1;
-                if("has_passions" in window.localStorage) {
-                    $state.go("app.dashboard");
+            function(response) {
+                UserManager.log_fb_response(response)
+                .then(function(obj){
+
+                }, function(obj){
+                    console.log("attempt write failed");
+                });
+                if(response.status && response.status == "connected") {
+                    $scope.fb_data.status = "Connected";
+                    window.localStorage.is_logged_in = 1;
+                    if("has_passions" in window.localStorage) {
+                        $state.go("app.dashboard");
+                    }
+                    else {
+                        $state.go("passions.add");
+                    }
                 }
                 else {
-                    $state.go("app.passions");
+                    $scope.fb_data.status = "Unexpected Error CN41";
+                    console.log(success);
                 }
             },
             function (error) {
