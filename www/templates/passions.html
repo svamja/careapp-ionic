@@ -1,10 +1,10 @@
-<ion-view view-title="Passions">
+<ion-view view-title="My Passions">
   <ion-content>
     <div class="bar bar-header bar-positive item-input-inset">
         <ion-search 
             id="ion_search_passions"
             class="search-wrapper-light" 
-            placeholder="Type to select or create your passions" 
+            placeholder="I care for .." 
             min-length="2" 
             model="queried_passions" 
             search-model="searchModel"
@@ -28,8 +28,8 @@
 
   </ion-content>
   <ion-footer-bar class="bar-positive tabs tabs-calm">
-    <a class="tab-item tab-item-active" ng-click="done()">
-      {{ui_data.button_text}}
+    <a class="tab-item tab-item-active" ng-click="done()" ng-disabled="user_passions.length == 0">
+      Save
     </a>
   </ion-footer-bar>
 </ion-view>

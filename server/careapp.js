@@ -5,6 +5,7 @@ slug = function(str)
     return str.toLowerCase().replace(/[^\w ]+/g,'').replace(/ +/g,'-');
 };
 
+/* Older version
 categories = [
     {
         name: "Health and Basic Needs",
@@ -59,6 +60,24 @@ categories = [
         name: "Other"
     }
 ];
+*/
+
+/* Newer version - only categories, no subcategories */
+
+categories = [
+    { name: "Basic Needs" },
+    { name: "Health" },
+    { name: "Social" },
+    { name: "Children & Youth" },
+    { name: "Women" },
+    { name: "Seniors & Specially Abled" },
+    { name: "Animals" },
+    { name: "Safety" },
+    { name: "Environment" },
+    { name: "Spiritual" },
+    { name: "Happiness" },
+    { name: "Others" }
+];
 
 put_categories = function() {
     for(i in categories) {
@@ -95,6 +114,38 @@ put_categories = function() {
             }
         }
     }
+}
+
+delete_categories = function() {
+
+    // Delete Categories
+    db.query("categories/by_order")
+    .then(function(result) {
+        console.log(result);
+        $(result.rows).each(function(i, row) {
+            doc = row.value;
+            db.remove(doc);
+        });
+    })
+    .catch(function(obj) {
+        console.log(obj);
+    });
+
+    // Delete Sub-categories
+    db.query("sub_categories/by_category")
+    .then(function(result) {
+        console.log(result);
+        $(result.rows).each(function(i, row) {
+            doc = row.value;
+            db.remove(doc);
+        });
+    })
+    .catch(function(obj) {
+        console.log(obj);
+    });
+
+
+
 }
 
 

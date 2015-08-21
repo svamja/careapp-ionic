@@ -3,9 +3,12 @@ angular.module('careapp.controllers')
 .controller('PassionsController', function($scope, $state, $ionicHistory, $q) {
     $scope.ui_data = { button_text : "Skip" };
     $scope.user_passions = [];
-    $scope.searchModel = { value: "book"};
+    $scope.searchModel = { value: ""};
 
     $scope.done = function() {
+        //TODO: Save user_passions
+        console.log($scope.user_passions);
+
         $ionicHistory.nextViewOptions({
           // historyRoot: true,
           disableBack: true
@@ -85,32 +88,45 @@ angular.module('careapp.controllers')
 
     $scope.select_category = function(category) {
         $scope.new_passion.category_id = category._id;
-        user_db.query("sub_categories/by_category", {
-            key: [category._id],
-            include_docs: true
-        })
-        .then(function(result) {
-            $scope.sub_categories = [];
-            if("rows" in result) {
-                for(i in result.rows) {
-                    $scope.sub_categories.push(result.rows[i].doc);
-                }
-            }
-        })
-        .catch(function(obj) {
-            console.log(obj);
-        });
-        $state.go("passions.add_2");
-    }
 
-    $scope.select_sub_category = function(sub_category) {
-        $scope.new_passion.sub_category_id = sub_category._id;
+        // Get Sub-categories
+        // user_db.query("sub_categories/by_category", {
+        //     key: [category._id],
+        //     include_docs: true
+        // })
+        // .then(function(result) {
+        //     $scope.sub_categories = [];
+        //     if("rows" in result) {
+        //         for(i in result.rows) {
+        //             $scope.sub_categories.push(result.rows[i].doc);
+        //         }
+        //     }
+        // })
+        // .catch(function(obj) {
+        //     console.log(obj);
+        // });
+        // $state.go("passions.add_2");
+
+        // Save New Passion
         var passion = $scope.new_passion;
         passion.slug = slug(passion.name);
         passion.type = 'passion';
         passion._id = 'pas-' + passion.slug;
         user_db.put(passion);
+
+        // Go back to Add Passions screen
         $state.go("passions.add");
+
     }
+
+    // $scope.select_sub_category = function(sub_category) {
+    //     $scope.new_passion.sub_category_id = sub_category._id;
+    //     var passion = $scope.new_passion;
+    //     passion.slug = slug(passion.name);
+    //     passion.type = 'passion';
+    //     passion._id = 'pas-' + passion.slug;
+    //     user_db.put(passion);
+    //     $state.go("passions.add");
+    // }
 
 });

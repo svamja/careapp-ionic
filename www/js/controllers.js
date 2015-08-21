@@ -16,6 +16,10 @@ angular.module('careapp.controllers', [])
 
     $scope.login = function() {
 
+        //TODO: Location factory to get cached location here
+        // http://ngcordova.com/docs/plugins/geolocation/
+        // Facebook alternative is weak : permission of "user_location"
+
         $scope.fb_data.status = "Connecting ..";
 
         if (window.cordova.platformId == "browser") {
@@ -25,15 +29,17 @@ angular.module('careapp.controllers', [])
         }
 
         $cordovaFacebook.login(["public_profile", "email", "user_friends"]).then(
-            function(response) {
-                UserManager.log_fb_response(response)
-                .then(function(obj){
+            function(fb_response) {
+                if(!fb_response.status || fb_response.status != "connected") {
+                    $scope.fb_data.status = "Unexpected Error CN30";
+                    console.log(fb_response);
+                    return;
+                }
+                $scope.fb_data.status = "Creating/Fetching Profile..";
 
-                }, function(obj){
-                    console.log("attempt write failed");
-                });
-                if(response.status && response.status == "connected") {
-                    $scope.fb_data.status = "Connected";
+                UserManager.login(fb_response)
+                .then(function(data) {
+                    $scope.fb_data.status = "Connected. Moving Over..";
                     window.localStorage.is_logged_in = 1;
                     if("has_passions" in window.localStorage) {
                         $state.go("app.dashboard");
@@ -41,11 +47,12 @@ angular.module('careapp.controllers', [])
                     else {
                         $state.go("passions.add");
                     }
-                }
-                else {
-                    $scope.fb_data.status = "Unexpected Error CN41";
-                    console.log(success);
-                }
+                })
+                .catch(function(e) {
+                    $scope.fb_data.status = "Unexpected Error: " + e;
+                });
+
+
             },
             function (error) {
                 $scope.fb_data.status = "Authentication Error";

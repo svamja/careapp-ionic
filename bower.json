@@ -6,5 +6,9 @@
     "pouchdb": "~4.0.0",
     "ngCordova": "~0.1.20-alpha",
     "pouchdb-quick-search": "~1.0.2"
+  },
+  "devDependencies": {
+    "jquery": "~2.1.4",
+    "pouchdb-upsert": "~1.1.3"
   }
 }
