@@ -28,4 +28,48 @@ angular.module('careapp.services', [])
 
 })
 
+.factory('DbManager', function($rootScope, $http, $q) {
+
+    var dbs = {
+        "messages_db" : {
+            name : "careapp_messages_db",
+            options : {},
+            promise : false
+        }
+    };
+
+    var sync = function(db_id) {
+        console.log("syncing " + db_id);
+        var deferred = $q.defer();
+        var local_db = new PouchDB(dbs[db_id]);
+        var remote_db = new PouchDB('http://localhost:5984/' + dbs[db_id].name);
+        var options = {};
+        local_db.sync(remote_db, options)
+        .on('complete', function() {
+            deferred.resolve(local_db);
+        })
+        .on('error', function(error) {
+            deferred.reject(error);
+        });
+        deferred.resolve(local_db);
+        dbs[db_id].promise = deferred.promise;
+        return dbs[db_id].promise;
+    }
+
+    var get_promise = function(db_id) {
+        if(dbs[db_id].promise) {
+            return dbs[db_id].promise;
+        }
+        return sync(db_id);
+    }
+
+    return {
+        get : get_promise,
+        sync: sync
+    };
+
+
+})
+
+
 ;
