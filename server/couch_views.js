@@ -30,6 +30,18 @@
    }
 }
 
+
+{
+   "_id": "_design/cities",
+   "language": "javascript",
+   "views": {
+       "all": {
+           "map": "function(doc) { if(doc.type == 'city') { emit([doc._id], doc); }  }"
+       }
+   }
+}
+
+
 // Filters
 
 

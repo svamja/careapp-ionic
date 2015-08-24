@@ -1,6 +1,16 @@
-<ion-view view-title="Location">
-  <ion-content>
-    <div> TBD: Confirm Location </div>
-    <a href="#/app/dashboard"> Next </a>
-  </ion-content>
+<ion-view view-title="Your City">
+  <form name="location_form">
+    <ion-content>
+      <div class="list" name="location_form">
+        <label class="item item-input">
+          <input type="text" placeholder="Enter your city name.." ng-model="city" name="city" required="true" ng-minLength="2">
+        </label>
+      </div>        
+    </ion-content>
+    <ion-footer-bar class="bar-positive tabs tabs-calm">
+      <a class="tab-item tab-item-active" ng-click="save()" ng-disabled="location_form.city.$invalid">
+        Save
+      </a>
+    </ion-footer-bar>
+  </form>
 </ion-view>

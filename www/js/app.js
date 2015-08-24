@@ -1,30 +1,5 @@
 // CareApp
 
-var server_base_url = "http://careapp.localhost";
-
-var user_db = new PouchDB('careapp_user_db');
-var remote_user_db = new PouchDB('http://localhost:5984/careapp_user_db');
-user_id = 1;
-
-user_db
-.sync(remote_user_db, {
-    filter: 'app/by_user',
-    query_params: { "user_id": user_id }
-})
-.on('complete', function() {
-    console.log('sync complete');
-})
-.on('error', function() {
-    console.log('sync error');
-});
-
-var full_db = new PouchDB('http://localhost:5984/careapp_full_db');
-
-slug = function(str)
-{
-    return str.toLowerCase().replace(/[^\w ]+/g,'').replace(/ +/g,'-');
-};
-
 angular.module('careapp', ['ionic', 'ngCordova', 'careapp.controllers', 'careapp.services'])
 
 .run(function($ionicPlatform) {
@@ -32,7 +7,7 @@ angular.module('careapp', ['ionic', 'ngCordova', 'careapp.controllers', 'careapp
     $ionicPlatform.ready(function() {
         // Hide the accessory bar by default (remove this to show the accessory bar above the keyboard
         // for form inputs)
-        if (window.cordova && window.cordova.plugins.Keyboard) {
+        if (window.cordova && window.cordova.plugins && window.cordova.plugins.Keyboard) {
             cordova.plugins.Keyboard.hideKeyboardAccessoryBar(true);
             cordova.plugins.Keyboard.disableScroll(true);
         }
@@ -71,7 +46,8 @@ angular.module('careapp', ['ionic', 'ngCordova', 'careapp.controllers', 'careapp
         url: '/location',
         views: {
             'mainContent': {
-                templateUrl: 'templates/location.html'
+                templateUrl: 'templates/location.html',
+                controller: 'LocationsController'
             }
         }
     })
