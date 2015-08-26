@@ -3,13 +3,16 @@
     <ion-content>
       <div class="list" name="location_form">
         <label class="item item-input">
-          <input type="text" placeholder="Enter your city name.." ng-model="city" name="city" required="true" ng-minLength="2">
+          <input type="text" ng-model="city_info.city" name="city" required="true" ng-disabled="ui_data.input_disabled">
+          <input type="hidden" ng-model="city_info.city_id" name="city_id">
         </label>
-      </div>        
+      </div>
+      <div class="center calm"> {{ui_data.status}} </div>
+
     </ion-content>
     <ion-footer-bar class="bar-positive tabs tabs-calm">
-      <a class="tab-item tab-item-active" ng-click="save()" ng-disabled="location_form.city.$invalid">
-        Save
+      <a class="tab-item tab-item-active" ng-click="save(location_form)" ng-disabled="location_form.city.$invalid">
+        Looks Good
       </a>
     </ion-footer-bar>
   </form>

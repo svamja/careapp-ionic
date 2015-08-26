@@ -11,18 +11,13 @@ angular.module('careapp.controllers', [])
 
 })
 
-.controller('LoginController', function($scope, $state, $cordovaFacebook, UserManager, DbManager) {
+.controller('LoginController', function($scope, $state, $cordovaFacebook, UserManager, DbManager, GeoManager) {
     $scope.fb_data = { status: "Not connected" };
 
-    //TODO: Prepare dropdown of cities in background.
-    // DbManager.sync("passions_db");
+    // Fetch Geolocation info in background.
+    GeoManager.get_city_info();
 
     $scope.login = function() {
-
-        //TODO: Location factory to get cached location here
-        // http://ngcordova.com/docs/plugins/geolocation/
-        // http://stackoverflow.com/a/6798005
-        // Facebook alternative is weak, ie add permission of "user_location"
 
         $scope.fb_data.status = "Connecting ..";
 
@@ -68,11 +63,33 @@ angular.module('careapp.controllers', [])
     }
 })
 
-.controller('LocationsController', function($scope, $state, UserManager) {
-    $scope.city = "";
+.controller('LocationsController', function($scope, $state, UserManager, GeoManager) {
+    $scope.ui_data = {
+        status: "Fetching location ..",
+        input_disabled : true
+    };
+    $scope.city_info = {};
+    
+    GeoManager.get_city_info()
+    .then(function(city_info) {
+        $scope.ui_data.status = "Successfully fetched! Updating profile..";
+        $scope.city_info = city_info;
+    })
+    .catch(function(err) {
+        $scope.ui_data.status = "Error fetching your location. Enter your city name manually!";
+        $scope.ui_data.input_disabled = false;
+    });
+
     $scope.save = function() {
-        UserManager.update_city($scope.city);
-        $state.go("app.dashboard");
+        UserManager.update_city($scope.city_info)
+        .then(function() {
+            $scope.ui_data.status = "Profile updated. Moving on..";
+            $state.go("app.dashboard");
+        })
+        .catch(function(err) {
+            $scope.ui_data.status = "Error: " + err;
+        })
+        ;
     }
 })
 

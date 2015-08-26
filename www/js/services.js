@@ -3,6 +3,7 @@ angular.module('careapp.services', [])
 .factory('UserManager', function($rootScope, $http, $q) {
 
     var server_base_url = "http://careapp.localhost";
+    // var server_base_url = "http://server.thecareapp.org";
 
     var login = function(fb_response) {
         var data = {
@@ -27,10 +28,17 @@ angular.module('careapp.services', [])
         return deferred.promise;
     };
 
-    var update_city = function(city) {
-        window.localStorage.user_city = $scope.city;
-        //TODO: Send server request to update user's city
-        //TODO: Update profile db
+    var update_city = function(city_info) {
+        var data = {
+            city_info: city_info
+        };
+        return $http.post(server_base_url + "/users/update_city", data)
+        .then(function(response) {
+            if(response.data && response.data.status && response.data.status == "success") {
+                return "success";
+            }
+            return $q.reject("SV41");
+        });
     }
 
     return {
@@ -41,6 +49,9 @@ angular.module('careapp.services', [])
 })
 
 .factory('DbManager', function($rootScope, $http, $q) {
+
+    var remote_base_url = 'http://localhost:5984/';
+    // var remote_base_url = 'http://db.thecareapp.org/';
 
     var slug = function(str)
     {
@@ -95,7 +106,7 @@ angular.module('careapp.services', [])
         console.log("syncing " + db_id);
         var deferred = $q.defer();
         var local_db = new PouchDB(dbs[db_id].name);
-        var remote_db = new PouchDB('http://localhost:5984/' + dbs[db_id].name);
+        var remote_db = new PouchDB(remote_base_url + dbs[db_id].name);
         var options = {};
         local_db.sync(remote_db, options)
         .on('complete', function() {
@@ -130,5 +141,80 @@ angular.module('careapp.services', [])
 
 })
 
+
+.factory('GeoManager', function($cordovaGeolocation, $q) {
+
+    var get_city_info = function(expiry) {
+
+        if(!expiry) {
+            expiry = 3600; // 1 hour of validity
+        }
+        if(!window.localStorage.geo_status) {
+            window.localStorage.geo_status = "in_progress";
+        }
+
+        var curr_ts = Math.floor(Date.now() / 1000);
+        if(window.localStorage.geo_status == "success" && 
+            window.localStorage.geo_timestamp + expiry > curr_ts)
+        {
+            var city_info = JSON.parse(window.localStorage.geo_city_info);
+            return $q.when(city_info);
+        }
+        return $cordovaGeolocation
+        .getCurrentPosition({
+            timeout: 2000,
+            enableHighAccuracy: false,
+            maximumAge: 3600*1000 
+        })
+        .then(function (position) {
+            var deferred = $q.defer();
+            if("google" in window && google.maps) {
+                var geocoder = new google.maps.Geocoder();
+                var lat = position.coords.latitude;
+                var lng = position.coords.longitude;
+                var latlng = new google.maps.LatLng(lat, lng);
+                geocoder.geocode({'latLng': latlng}, function(results, status) {
+                    if (status == google.maps.GeocoderStatus.OK) {
+                        if (results && results.length > 0) {
+                            deferred.resolve(results);
+                        }
+                    }
+                    deferred.reject("geocoder failed");
+                });
+            }
+            else {
+                deferred.reject("google maps api not loaded");
+            }
+            return deferred.promise;
+        })
+        .then(function(results) {
+            var city_info = {};
+            var city, country;
+            for (var i=0; i < results.length; i++) {
+                if (results[i].address_components[0].types[0] == "administrative_area_level_2") {
+                    city = results[i].address_components[0].short_name;
+                    city_info['city'] = city;
+                    city_info['city_id'] = results[i].place_id;
+                }
+                else if (results[i].address_components[0].types[0] == "country") {
+                    country = results[i].address_components[0].short_name;
+                    city_info['country'] = country;
+                    city_info['country_id'] = results[i].place_id;
+                }
+            }
+            if(city) {
+                window.localStorage.geo_status = "success";
+                window.localStorage.geo_timestamp = Math.floor(Date.now() / 1000);
+                window.localStorage.geo_city_info = JSON.stringify(city_info);
+                return city_info;
+            }
+        });
+    };
+
+    return {
+        get_city_info: get_city_info
+    }
+
+})
 
 ;
