@@ -40,8 +40,6 @@ angular.module('careapp.controllers', [])
                 console.log(login_response);
                 throw "CN42";
             }
-            window.localStorage.user_id = login_response.user_id;
-            window.localStorage.user_token = login_response.token;
             return login_response;
         })
         .then(function(login_response) {
@@ -63,7 +61,7 @@ angular.module('careapp.controllers', [])
     }
 })
 
-.controller('LocationsController', function($scope, $state, UserManager, GeoManager) {
+.controller('LocationsController', function($scope, $state, DbManager, GeoManager) {
     $scope.ui_data = {
         status: "Fetching location ..",
         input_disabled : true
@@ -81,7 +79,17 @@ angular.module('careapp.controllers', [])
     });
 
     $scope.save = function() {
-        UserManager.update_city($scope.city_info)
+
+        DbManager.get("users_db")
+        .then(function(users_db) {
+            var db_user_id = "org.couchdb.user:" + window.localStorage.user_id;
+            return users_db.get(db_user_id)
+            .then(function(user_doc) {
+                user_doc['city_info'] = $scope.city_info;
+                user_doc['city'] = $scope.city_info.city;
+                return users_db.put(user_doc);
+            });
+        })
         .then(function() {
             $scope.ui_data.status = "Profile updated. Moving on..";
             $state.go("app.dashboard");

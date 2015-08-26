@@ -15,6 +15,8 @@ angular.module('careapp.services', [])
             if(good_response.data && good_response.data.status && good_response.data.status == "success" && good_response.data.token) {
                 login_response = good_response.data;
                 login_response.user_id = 'fb-' + fb_response.authResponse.userID;
+                window.localStorage.user_id = login_response.user_id;
+                window.localStorage.user_token = login_response.token;
                 deferred.resolve(login_response);
             }
             else {
@@ -28,22 +30,23 @@ angular.module('careapp.services', [])
         return deferred.promise;
     };
 
-    var update_city = function(city_info) {
-        var data = {
-            city_info: city_info
-        };
-        return $http.post(server_base_url + "/users/update_city", data)
-        .then(function(response) {
-            if(response.data && response.data.status && response.data.status == "success") {
-                return "success";
-            }
-            return $q.reject("SV41");
-        });
-    }
+    // var update_city = function(city_info) {
+    //     var data = {
+    //         city_info: city_info,
+    //         user_id: window.localStorage.user_id,
+    //         user_token: window.localStorage.user_token,
+    //     };
+    //     return $http.post(server_base_url + "/users/update_city", data)
+    //     .then(function(response) {
+    //         if(response.data && response.data.status && response.data.status == "success") {
+    //             return "success";
+    //         }
+    //         return $q.reject("SV41");
+    //     });
+    // }
 
     return {
-        login: login,
-        update_city: update_city
+        login: login
     };
 
 })
@@ -59,6 +62,12 @@ angular.module('careapp.services', [])
     };
 
     var dbs = {
+
+        "users_db" : {
+            name: "_users",
+            remote_only: true
+        },
+
         "messages_db" : {
             name : "careapp_messages_db",
             options :
@@ -103,10 +112,25 @@ angular.module('careapp.services', [])
     };
 
     var sync = function(db_id) {
-        console.log("syncing " + db_id);
+        if(!dbs[db_id]) {
+            return $q.reject("Invalid db_id");
+        }
+        var auth_options = {
+            username: window.localStorage.user_id,
+            password: window.localStorage.user_token
+        };
+
+        if(dbs[db_id].remote_only) {
+            var remote_db = new PouchDB(remote_base_url + dbs[db_id].name, {
+                auth: auth_options
+            });
+            return $q.when(remote_db);
+        }
         var deferred = $q.defer();
         var local_db = new PouchDB(dbs[db_id].name);
-        var remote_db = new PouchDB(remote_base_url + dbs[db_id].name);
+        var remote_db = new PouchDB(remote_base_url + dbs[db_id].name, {
+            auth: auth_options
+        });
         var options = {};
         local_db.sync(remote_db, options)
         .on('complete', function() {
@@ -115,16 +139,13 @@ angular.module('careapp.services', [])
         .on('error', function(error) {
             deferred.reject(error);
         });
-        deferred.resolve(local_db);
         dbs[db_id].promise = deferred.promise;
         return dbs[db_id].promise;
     }
 
     var get_promise = function(db_id) {
         if(!dbs[db_id]) {
-            var deferred = $q.defer();
-            deferred.reject("Invalid db_id");
-            return deferred.promise;
+            return $q.reject("Invalid db_id");
         }
         if(dbs[db_id].promise) {
             return dbs[db_id].promise;
@@ -155,7 +176,7 @@ angular.module('careapp.services', [])
 
         var curr_ts = Math.floor(Date.now() / 1000);
         if(window.localStorage.geo_status == "success" && 
-            window.localStorage.geo_timestamp + expiry > curr_ts)
+            parseInt(window.localStorage.geo_timestamp) + expiry > curr_ts)
         {
             var city_info = JSON.parse(window.localStorage.geo_city_info);
             return $q.when(city_info);
@@ -189,17 +210,16 @@ angular.module('careapp.services', [])
         })
         .then(function(results) {
             var city_info = {};
-            var city, country;
+            var city;
             for (var i=0; i < results.length; i++) {
                 if (results[i].address_components[0].types[0] == "administrative_area_level_2") {
-                    city = results[i].address_components[0].short_name;
+                    city = results[i].address_components[0].long_name;
                     city_info['city'] = city;
                     city_info['city_id'] = results[i].place_id;
                 }
                 else if (results[i].address_components[0].types[0] == "country") {
-                    country = results[i].address_components[0].short_name;
-                    city_info['country'] = country;
-                    city_info['country_id'] = results[i].place_id;
+                    city_info['country'] = results[i].address_components[0].long_name;
+                    city_info['country_code'] = results[i].address_components[0].short_name;
                 }
             }
             if(city) {
