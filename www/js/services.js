@@ -2,8 +2,8 @@ angular.module('careapp.services', [])
 
 .factory('UserManager', function($rootScope, $http, $q) {
 
-    var server_base_url = "http://careapp.localhost";
-    // var server_base_url = "http://server.thecareapp.org";
+    // var server_base_url = "http://careapp.localhost";
+    var server_base_url = "http://server.thecareapp.org";
 
     var login = function(fb_response) {
         var data = {
@@ -53,8 +53,8 @@ angular.module('careapp.services', [])
 
 .factory('DbManager', function($rootScope, $http, $q) {
 
-    var remote_base_url = 'http://localhost:5984/';
-    // var remote_base_url = 'http://db.thecareapp.org/';
+    // var remote_base_url = 'http://localhost:5984/';
+    var remote_base_url = 'http://db.thecareapp.org:5984/';
 
     var slug = function(str)
     {
@@ -183,9 +183,8 @@ angular.module('careapp.services', [])
         }
         return $cordovaGeolocation
         .getCurrentPosition({
-            timeout: 2000,
             enableHighAccuracy: false,
-            maximumAge: 3600*1000 
+            maximumAge: 10*3600*1000 // 10 hours
         })
         .then(function (position) {
             var deferred = $q.defer();

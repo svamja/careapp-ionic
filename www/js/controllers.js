@@ -1,6 +1,6 @@
 angular.module('careapp.controllers', [])
 
-.controller('AppController', function($scope, $state) {
+.controller('AppController', function($scope, $state, $ionicHistory) {
 
     // With the new view caching in Ionic, Controllers are only called
     // when they are recreated or on app start, instead of every page change.
@@ -8,6 +8,17 @@ angular.module('careapp.controllers', [])
     // listen for the $ionicView.enter event:
     //$scope.$on('$ionicView.enter', function(e) {
     //});
+    
+    $scope.logout = function() {
+        window.localStorage.removeItem("is_logged_in");
+        window.localStorage.removeItem("user_id");
+        window.localStorage.removeItem("user_token");
+        $ionicHistory.nextViewOptions({
+            disableBack: true
+        });
+        $state.go("login");
+    }
+
 
 })
 
@@ -19,6 +30,7 @@ angular.module('careapp.controllers', [])
 
     $scope.login = function() {
 
+        //TODO: Handle No Internet use case
         $scope.fb_data.status = "Connecting ..";
 
         if (window.cordova.platformId == "browser") {
@@ -56,6 +68,7 @@ angular.module('careapp.controllers', [])
             }
         })
         .catch(function (error) {
+            console.log(error);
             $scope.fb_data.status = "Unexpected Error: " + error;
         });
     }
@@ -67,6 +80,8 @@ angular.module('careapp.controllers', [])
         input_disabled : true
     };
     $scope.city_info = {};
+
+    //TODO: Provide link to update manullay, after a timeout
     
     GeoManager.get_city_info()
     .then(function(city_info) {
@@ -74,6 +89,7 @@ angular.module('careapp.controllers', [])
         $scope.city_info = city_info;
     })
     .catch(function(err) {
+        console.log(err);
         $scope.ui_data.status = "Error fetching your location. Enter your city name manually!";
         $scope.ui_data.input_disabled = false;
     });
