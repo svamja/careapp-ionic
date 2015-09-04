@@ -1,9 +1,10 @@
-angular.module('careapp.services', [])
+angular.module('careapp.services', ['careapp.constants'])
 
-.factory('UserManager', function($rootScope, $http, $q) {
+.factory('UserManager', function($rootScope, $http, $q, EnvApiUrl) {
 
     // var server_base_url = "http://careapp.localhost";
-    var server_base_url = "http://server.thecareapp.org";
+    // var server_base_url = "http://server.thecareapp.org";
+    var server_base_url = EnvApiUrl;
 
     var login = function(fb_response) {
         var data = {
@@ -51,10 +52,11 @@ angular.module('careapp.services', [])
 
 })
 
-.factory('DbManager', function($rootScope, $http, $q) {
+.factory('DbManager', function($rootScope, $http, $q, EnvDbUrl) {
 
     // var remote_base_url = 'http://localhost:5984/';
-    var remote_base_url = 'http://db.thecareapp.org:5984/';
+    // var remote_base_url = 'http://db.thecareapp.org:5984/';
+    var remote_base_url = EnvDbUrl;
 
     var slug = function(str)
     {
@@ -184,6 +186,7 @@ angular.module('careapp.services', [])
         return $cordovaGeolocation
         .getCurrentPosition({
             enableHighAccuracy: false,
+            timeout: 10000,
             maximumAge: 10*3600*1000 // 10 hours
         })
         .then(function (position) {

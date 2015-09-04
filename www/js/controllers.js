@@ -44,7 +44,7 @@ angular.module('careapp.controllers', [])
             if(!fb_response.status || fb_response.status != "connected") {
                 throw "CN34";
             }
-            $scope.fb_data.status = "Creating/Fetching Profile..";
+            $scope.fb_data.status = "Fetching Profile..";
             return UserManager.login(fb_response);
         })
         .then(function(login_response) {
@@ -80,19 +80,24 @@ angular.module('careapp.controllers', [])
         input_disabled : true
     };
     $scope.city_info = {};
+    $scope.manual_link_flag = false;
 
-    //TODO: Provide link to update manullay, after a timeout
-    
     GeoManager.get_city_info()
     .then(function(city_info) {
-        $scope.ui_data.status = "Successfully fetched! Updating profile..";
+        $scope.ui_data.status = "Location fetched!";
         $scope.city_info = city_info;
+        $scope.manual_link_flag = true;
     })
     .catch(function(err) {
         console.log(err);
-        $scope.ui_data.status = "Error fetching your location. Enter your city name manually!";
+        $scope.ui_data.status = "Error fetching your location! Enter Manually.";
         $scope.ui_data.input_disabled = false;
     });
+
+    $scope.enable_manual_entry = function() {
+        $scope.ui_data.input_disabled = false;
+        $scope.city_info = {};
+    };
 
     $scope.save = function() {
 

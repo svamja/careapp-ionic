@@ -8,11 +8,14 @@
         </label>
       </div>
       <div class="center calm"> {{ui_data.status}} </div>
+      <div class="center" ng-show="manual_link_flag"> 
+        Doesn't look good. <a ng-click="enable_manual_entry()" href="#"> Enter manually. </a>
+      </div>
 
     </ion-content>
     <ion-footer-bar class="bar-positive tabs tabs-calm">
       <a class="tab-item tab-item-active" ng-click="save(location_form)" ng-disabled="location_form.city.$invalid">
-        Looks Good
+        Save
       </a>
     </ion-footer-bar>
   </form>

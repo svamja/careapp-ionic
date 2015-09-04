@@ -1,0 +1,4 @@
+{
+    "GULP_ENV_DB_URL" : "http://db.thecareapp.org:5984/",
+    "GULP_ENV_API_URL" : "http://server.thecareapp.org"
+}
