@@ -155,10 +155,28 @@ angular.module('careapp.services', ['careapp.constants'])
         return sync(db_id);
     }
 
+    var me = function() {
+        if(window.localStorage.profile_me)
+        {
+            var profile_me = JSON.parse(window.localStorage.profile_me);
+            return $q.when(profile_me);
+        }
+        return get_promise("profiles_db")
+        .then(function(profiles_db) {
+            return profiles_db.get(window.localStorage.user_id);
+        })
+        .then(function(profile_me) {
+            window.localStorage.profile_me = JSON.stringify(profile_me);
+            return profile_me;
+        })
+        ;
+    }
+
     return {
         get : get_promise,
         sync: sync,
-        slug: slug
+        slug: slug,
+        me: me
     };
 
 

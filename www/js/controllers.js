@@ -13,6 +13,7 @@ angular.module('careapp.controllers', [])
         window.localStorage.removeItem("is_logged_in");
         window.localStorage.removeItem("user_id");
         window.localStorage.removeItem("user_token");
+        window.localStorage.removeItem("profile_me");
         $ionicHistory.nextViewOptions({
             disableBack: true
         });
@@ -74,7 +75,7 @@ angular.module('careapp.controllers', [])
     }
 })
 
-.controller('LocationsController', function($scope, $state, DbManager, GeoManager) {
+.controller('LocationsController', function($scope, $state, $ionicHistory, DbManager, GeoManager) {
     $scope.ui_data = {
         status: "Fetching location ..",
         input_disabled : true
@@ -100,26 +101,51 @@ angular.module('careapp.controllers', [])
     };
 
     $scope.save = function() {
-
-        DbManager.get("users_db")
-        .then(function(users_db) {
-            var db_user_id = "org.couchdb.user:" + window.localStorage.user_id;
-            return users_db.get(db_user_id)
-            .then(function(user_doc) {
-                user_doc['city_info'] = $scope.city_info;
-                user_doc['city'] = $scope.city_info.city;
-                return users_db.put(user_doc);
+        DbManager.get("profiles_db")
+        .then(function(profiles_db) {
+            return profiles_db.upsert(window.localStorage.user_id, function(doc) {
+                if(!doc.type) {
+                    doc["type"] = "profile";
+                }
+                doc["city_info"] = $scope.city_info;
+                doc['city'] = $scope.city_info.city;
+                return doc;
             });
         })
         .then(function() {
+            DbManager.sync("profiles_db"); // Background Sync
             $scope.ui_data.status = "Profile updated. Moving on..";
-            $state.go("app.dashboard");
+            $ionicHistory.nextViewOptions({
+                disableBack: true
+            });
+            if("has_passions" in window.localStorage) {
+                $state.go("app.dashboard");
+            }
+            else {
+                $state.go("passions.add");
+            }
         })
         .catch(function(err) {
             $scope.ui_data.status = "Error: " + err;
         })
         ;
     }
+})
+
+.controller('DashboardController', function($scope, $state, $ionicHistory, DbManager) {
+    $scope.title = "";
+    $scope.show_loading = false;
+    $scope.show_actions = true;
+    DbManager.me()
+    .then(function(me) {
+        if(me && me.city) {
+            $scope.title = "My " + me.city;
+        }
+    })
+    .catch(function(err) {
+        console.log(err);
+    })
+    ;
 })
 
 ;

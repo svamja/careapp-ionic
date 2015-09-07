@@ -1,5 +1,11 @@
 /* Empty. Add your own CSS if you like */
 
 .center {
-     text-align:center;
+     text-align: center;
 }
+
+.nav-bar-title img {
+    height: 44px;
+    vertical-align: middle;
+}
+

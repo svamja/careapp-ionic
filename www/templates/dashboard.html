@@ -1,5 +1,55 @@
-<ion-view view-title="TheCareApp">
+<ion-view>
+  <ion-nav-title>
+    <img src='img/logo100.png' /> {{title}}
+  </ion-nav-title>
+
   <ion-content>
-    <div> TBD: Dashboard </div>
+    <div class="padding center" ng-show="show_loading">
+      <ion-spinner icon="spiral"></ion-spinner>
+    </div>
+    <div class="list card">
+      <div class="item item-divider item-balanced">
+        Dog Care
+      </div>
+      <div class="item item-body">
+        2 Events, 5 Messages
+      </div>
+    </div>
+    <div class="list card">
+      <div class="item item-divider item-energized">
+        Food Care
+      </div>
+      <div class="item item-body">
+        3 Events Next Week
+      </div>
+    </div>
+    <div class="list card">
+      <div class="item item-divider">
+        Plantation
+      </div>
+      <div class="item item-body">
+        23 Members
+      </div>
+    </div>
+    <div class="list card">
+      <div class="item item-divider">
+        Child Education
+      </div>
+      <div class="item item-body">
+        15 Members
+      </div>
+    </div>
+    <div class="padding center" ng-show="show_actions">
+      <div>
+        <a href="#">
+          Add Passion
+        </a>
+      </div>
+      <div>
+        <a href="#">
+          Create Event
+        </a>
+      </div>
+    </div>
   </ion-content>
 </ion-view>

@@ -21,7 +21,7 @@ angular.module('careapp', ['ionic', 'ngCordova', 'careapp.controllers', 'careapp
 
 })
 
-.config(function($stateProvider, $urlRouterProvider, $cordovaFacebookProvider) {
+.config(function($stateProvider, $urlRouterProvider, $cordovaFacebookProvider, $ionicConfigProvider) {
 
     // var appID = 1625721067678662;
     // var version = "v2.0"; // or leave blank and default is v2.0
@@ -56,7 +56,8 @@ angular.module('careapp', ['ionic', 'ngCordova', 'careapp.controllers', 'careapp
         url: '/dashboard',
         views: {
             'mainContent': {
-                templateUrl: 'templates/dashboard.html'
+                templateUrl: 'templates/dashboard.html',
+                controller: "DashboardController"
             }
         }
     })
@@ -105,6 +106,9 @@ angular.module('careapp', ['ionic', 'ngCordova', 'careapp.controllers', 'careapp
     else {
         $urlRouterProvider.otherwise('/login');
     }
+
+    // Align Titles to Left
+    $ionicConfigProvider.navBar.alignTitle('left');
 
 })
 

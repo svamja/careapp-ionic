@@ -9,21 +9,21 @@ angular.module('careapp.controllers')
         DbManager.get("profiles_db")
         .then(function(profiles_db) {
             return profiles_db.upsert(window.localStorage.user_id, function(doc) {
-                new_doc = {
-                    "type" : "profile",
-                    "passions" : [],
-                };
+                if(!doc.type) {
+                    doc["type"] = "profile";
+                    doc["passions"] = [];
+                }
                 for(i in $scope.user_passions) {
                     user_passion = {};
                     user_passion['id'] = $scope.user_passions[i]['id'];
                     user_passion['name'] = $scope.user_passions[i]['name'];
-                    new_doc.passions.push(user_passion);
+                    doc.passions.push(user_passion);
                 }
-                console.log(new_doc);
-                return new_doc;
+                return doc;
             });
         })
-        .then(function() {
+        .then(function(res) {
+            window.localStorage.has_passions = 1;
             $ionicHistory.nextViewOptions({
                 disableBack: true
             });
