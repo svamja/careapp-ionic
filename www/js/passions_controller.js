@@ -4,6 +4,19 @@ angular.module('careapp.controllers')
     $scope.ui_data = { button_text : "Skip" };
     $scope.user_passions = [];
     $scope.searchModel = { value: ""};
+    passion_ids = [];
+    $scope.categories = [];
+
+
+    DbManager.me()
+    .then(function(me) {
+        if(me && me.passions) {
+            $scope.user_passions = me.passions;
+            for(i in me.passions) {
+                passion_ids.push(me.passions[i].id);
+            }
+        }
+    });
 
     $scope.done = function() {
         DbManager.get("profiles_db")
@@ -11,8 +24,8 @@ angular.module('careapp.controllers')
             return profiles_db.upsert(window.localStorage.user_id, function(doc) {
                 if(!doc.type) {
                     doc["type"] = "profile";
-                    doc["passions"] = [];
                 }
+                doc["passions"] = [];
                 for(i in $scope.user_passions) {
                     user_passion = {};
                     user_passion['id'] = $scope.user_passions[i]['id'];
@@ -23,6 +36,7 @@ angular.module('careapp.controllers')
             });
         })
         .then(function(res) {
+            DbManager.passion_ids(true); // Background refresh of local profile
             window.localStorage.has_passions = 1;
             $ionicHistory.nextViewOptions({
                 disableBack: true
@@ -61,8 +75,6 @@ angular.module('careapp.controllers')
         });
     };
 
-    passion_ids = [];
-
     $scope.add = function(passion) {
         if(passion_ids.indexOf(passion.id) == -1) {
             $scope.user_passions.push(passion);
@@ -78,9 +90,6 @@ angular.module('careapp.controllers')
             passion_ids.splice(i, 1);
         }
     }
-
-    $scope.categories = [];
-    $scope.sub_categories = [];
 
     DbManager.get("passions_db")
     .then(function(passions_db) {

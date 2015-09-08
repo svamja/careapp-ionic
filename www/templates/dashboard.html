@@ -3,46 +3,29 @@
     <img src='img/logo100.png' /> {{title}}
   </ion-nav-title>
 
-  <ion-content>
+  <ion-content class="dashboard">
+
+    <ion-refresher
+      pulling-text="pull to refresh.."
+      spinner="spiral"
+      on-refresh="refresh()">
+    </ion-refresher>
+
     <div class="padding center" ng-show="show_loading">
       <ion-spinner icon="spiral"></ion-spinner>
     </div>
-    <div class="list card">
-      <div class="item item-divider item-balanced">
-        Dog Care
+    <div class="list card" ng-repeat="card in cards">
+      <div class="item item-divider" ng-class="card.class">
+        <a href="#/passions/{{card.passion_id}}"> {{card.title}} </a>
       </div>
       <div class="item item-body">
-        2 Events, 5 Messages
-      </div>
-    </div>
-    <div class="list card">
-      <div class="item item-divider item-energized">
-        Food Care
-      </div>
-      <div class="item item-body">
-        3 Events Next Week
-      </div>
-    </div>
-    <div class="list card">
-      <div class="item item-divider">
-        Plantation
-      </div>
-      <div class="item item-body">
-        23 Members
-      </div>
-    </div>
-    <div class="list card">
-      <div class="item item-divider">
-        Child Education
-      </div>
-      <div class="item item-body">
-        15 Members
+        <a href="#"> {{card.text}} </a>
       </div>
     </div>
     <div class="padding center" ng-show="show_actions">
       <div>
-        <a href="#">
-          Add Passion
+        <a href="#/passions/categories">
+          Explore More!
         </a>
       </div>
       <div>

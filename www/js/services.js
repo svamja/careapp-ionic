@@ -155,8 +155,8 @@ angular.module('careapp.services', ['careapp.constants'])
         return sync(db_id);
     }
 
-    var me = function() {
-        if(window.localStorage.profile_me)
+    var me = function(refresh) {
+        if(window.localStorage.profile_me && !refresh)
         {
             var profile_me = JSON.parse(window.localStorage.profile_me);
             return $q.when(profile_me);
@@ -170,13 +170,32 @@ angular.module('careapp.services', ['careapp.constants'])
             return profile_me;
         })
         ;
-    }
+    };
+
+    var passion_ids = function(refresh) {
+        if(window.localStorage.passion_ids && !refresh)
+        {
+            var passion_ids = JSON.parse(window.localStorage.passion_ids);
+            return $q.when(passion_ids);
+        }
+        return me(refresh)
+        .then(function(profile_me) {
+            var passion_ids = [];
+            for(i in profile_me.passions) {
+                passion_ids.push(profile_me.passions[i].id);
+            }
+            window.localStorage.passion_ids = JSON.stringify(passion_ids);
+            return passion_ids;
+        })
+        ;
+    };
 
     return {
         get : get_promise,
         sync: sync,
         slug: slug,
-        me: me
+        me: me,
+        passion_ids: passion_ids
     };
 
 
