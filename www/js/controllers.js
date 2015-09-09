@@ -39,12 +39,14 @@ angular.module('careapp.controllers', [])
             facebookConnectPlugin.browserInit(appID, version);
         }
 
+        // Call Facebook API
         $cordovaFacebook.login(["public_profile", "email", "user_friends"])
         .then(function(fb_response) {
             if(!fb_response.status || fb_response.status != "connected") {
                 throw "CN34";
             }
             $scope.fb_data.status = "Fetching Profile..";
+            // Create user on DB Server
             return UserManager.login(fb_response);
         })
         .then(function(login_response) {
@@ -52,19 +54,33 @@ angular.module('careapp.controllers', [])
                 console.log(login_response);
                 throw "CN42";
             }
+            // Get Profiles DB on Local
+            return DbManager.get("profiles_db");
+        })
+        .then(function(profiles_db) {
+            // Upsert User Profile
+            return profiles_db.upsert(window.localStorage.user_id, function(doc) {
+                doc["type"] = "profile";
+                doc["last_seen"] = Date.now();
+                return doc;
+            });
+        })
+        .then(function() {
+            // Get User Profile from Local DB
             return DbManager.me();
         })
         .then(function(profile_me) {
             window.localStorage.is_logged_in = 1;
             $scope.fb_data.status = "Profile fetched. Loading..";
+            // Redirect
             if(!profile_me.city) {
                 $state.go("app.location");
             }
-            else if(profile_me.passions) {
-                $state.go("app.dashboard");
+            else if(!profile_me.passions) {
+                $state.go("passions.add");
             }
             else {
-                $state.go("passions.add");
+                $state.go("app.dashboard");
             }
         })
         .catch(function (error) {
@@ -138,22 +154,6 @@ angular.module('careapp.controllers', [])
     $scope.cards = [];
     var passion_ids = [];
 
-    // DbManager.me()
-    // .then(function(me) {
-    //     if(me && me.city) {
-    //         $scope.title = "My " + me.city;
-    //     }
-    //     return me;
-    // });
-
-    if(window.localStorage.cached_cards) {
-        $scope.cards = JSON.parse(window.localStorage.cached_cards);
-    }
-    else {
-        $scope.refresh();
-        $scope.show_loading = true;
-    }
-
     $scope.refresh = function() {
         DbManager.get("passions_db")
         .then(function(passions_db) {
@@ -198,15 +198,24 @@ angular.module('careapp.controllers', [])
                 }
                 $scope.cards.push(card);
             }
-            console.log($scope.cards);
             $scope.cards = $scope.cards.sort(function(a,b) {
                 return a.order - b.order;
             });
             window.localStorage.cached_cards = JSON.stringify($scope.cards);
             $scope.$broadcast('scroll.refreshComplete');
+            $scope.show_loading = false;
         })
         ;
+    };
+
+    if(window.localStorage.cached_cards) {
+        $scope.cards = JSON.parse(window.localStorage.cached_cards);
     }
+    else {
+        $scope.refresh();
+        $scope.show_loading = true;
+    }
+
 
 })
 

@@ -31,21 +31,6 @@ angular.module('careapp.services', ['careapp.constants'])
         return deferred.promise;
     };
 
-    // var update_city = function(city_info) {
-    //     var data = {
-    //         city_info: city_info,
-    //         user_id: window.localStorage.user_id,
-    //         user_token: window.localStorage.user_token,
-    //     };
-    //     return $http.post(server_base_url + "/users/update_city", data)
-    //     .then(function(response) {
-    //         if(response.data && response.data.status && response.data.status == "success") {
-    //             return "success";
-    //         }
-    //         return $q.reject("SV41");
-    //     });
-    // }
-
     return {
         login: login
     };
@@ -145,11 +130,11 @@ angular.module('careapp.services', ['careapp.constants'])
         return dbs[db_id].promise;
     }
 
-    var get_promise = function(db_id) {
+    var get_promise = function(db_id, refresh) {
         if(!dbs[db_id]) {
             return $q.reject("Invalid db_id");
         }
-        if(dbs[db_id].promise) {
+        if(dbs[db_id].promise && !refresh) {
             return dbs[db_id].promise;
         }
         return sync(db_id);
@@ -161,7 +146,7 @@ angular.module('careapp.services', ['careapp.constants'])
             var profile_me = JSON.parse(window.localStorage.profile_me);
             return $q.when(profile_me);
         }
-        return get_promise("profiles_db")
+        return get_promise("profiles_db", refresh)
         .then(function(profiles_db) {
             return profiles_db.get(window.localStorage.user_id);
         })
