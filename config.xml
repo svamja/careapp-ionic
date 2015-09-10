@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<widget id="com.ionicframework.careapp289081" version="0.0.1" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
-  <name>careapp</name>
+<widget id="org.thecareapp.thecareapp" version="0.0.1" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
+  <name>TheCareApp</name>
   <description>
-        An Ionic Framework and Cordova project.
+        Passion is Life!
     </description>
-  <author email="hi@ionicframework" href="http://ionicframework.com/">
+  <author email="team@thecareapp.org" href="http://thecareapp.org/">
       Ionic Framework Team
     </author>
   <content src="index.html"/>

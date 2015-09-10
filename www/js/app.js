@@ -23,11 +23,12 @@ angular.module('careapp', ['ionic', 'ngCordova', 'careapp.controllers', 'careapp
 
 .config(function($stateProvider, $urlRouterProvider, $cordovaFacebookProvider, $ionicConfigProvider) {
 
-    // var appID = 1625721067678662;
-    // var version = "v2.0"; // or leave blank and default is v2.0
-    // $cordovaFacebookProvider.browserInit(appID, version);
-
     $stateProvider
+
+    .state('home', {
+        url: '/home',
+        controller: 'HomeController'
+    })
 
     .state('login', {
         url: '/login',
@@ -36,7 +37,7 @@ angular.module('careapp', ['ionic', 'ngCordova', 'careapp.controllers', 'careapp
     })
 
     .state('app', {
-        url: '/app',
+        url: '',
         abstract: true,
         templateUrl: 'templates/menu_template.html',
         controller: 'AppController'
@@ -62,53 +63,75 @@ angular.module('careapp', ['ionic', 'ngCordova', 'careapp.controllers', 'careapp
         }
     })
 
-    .state('passions', {
+    .state('app.passions', {
         url: '/passions',
         abstract: true,
-        templateUrl: 'templates/menu_template.html',
-        controller: 'PassionsController'
+        views: {
+            'mainContent': {
+                template: '<ion-nav-view></ion-nav-view>',
+                controller: "PassionsController"
+            }
+        }
     })
 
-    .state('passions.add', {
+    .state('app.passions.add', {
         url: '/add',
-        views: {
-            'mainContent': {
-                templateUrl: 'templates/passions.html',
-            }
-        }
+        templateUrl: 'templates/passions.html'
     })
     
-    .state('passions.add_1', {
+    .state('app.passions.add_1', {
         url: '/add_1',
-        views: {
-            'mainContent': {
-                templateUrl: 'templates/passion_add_1.html',
-            }
-        }
+        templateUrl: 'templates/passion_add_1.html'
     })
     
-    .state('passions.add_2', {
+    .state('app.passions.add_2', {
         url: '/add_2',
+        templateUrl: 'templates/passion_add_2.html'
+    })
+
+    .state('app.feed', {
+        url: '/feed/:passion_id',
+        abstract: true,
         views: {
             'mainContent': {
-                templateUrl: 'templates/passion_add_2.html',
+                templateUrl: 'templates/feed.html',
+                controller: "FeedController"
             }
         }
     })
+
+    .state('app.feed.messages', {
+        url: '/messages',
+        views: {
+            'tab-messages': {
+                templateUrl: 'templates/messages.html',
+                controller: 'MessagesController'
+            }
+        }
+    })
+
+    .state('app.feed.members', {
+        url: '/members',
+        views: {
+            'tab-members': {
+                templateUrl: 'templates/members.html',
+                controller: 'MembersController'
+            }
+        }
+    })
+
 
     ;
 
 
     // if none of the above states are matched, use this as the fallback
-    if("is_logged_in" in window.localStorage) {
-        $urlRouterProvider.otherwise('/app/dashboard');
-    }
-    else {
-        $urlRouterProvider.otherwise('/login');
-    }
+    $urlRouterProvider.otherwise('/home');
 
     // Align Titles to Left
     $ionicConfigProvider.navBar.alignTitle('left');
+
+    // No text on back button
+    $ionicConfigProvider.backButton.previousTitleText(false).text('');
 
 })
 

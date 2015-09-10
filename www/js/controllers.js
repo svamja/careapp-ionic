@@ -2,24 +2,29 @@ angular.module('careapp.controllers', [])
 
 .controller('AppController', function($scope, $state, $ionicHistory) {
 
-    // With the new view caching in Ionic, Controllers are only called
-    // when they are recreated or on app start, instead of every page change.
-    // To listen for when this page is active (for example, to refresh data),
-    // listen for the $ionicView.enter event:
-    //$scope.$on('$ionicView.enter', function(e) {
-    //});
-    
     $scope.logout = function() {
         window.localStorage.removeItem("is_logged_in");
         window.localStorage.removeItem("user_id");
         window.localStorage.removeItem("user_token");
         window.localStorage.removeItem("profile_me");
+        window.localStorage.removeItem("passion_ids");
         $ionicHistory.nextViewOptions({
-            disableBack: true
+            historyRoot: true
         });
         $state.go("login");
     };
     $scope.menu_title = "Menu";
+})
+
+.controller('HomeController', function($scope, $state) {
+    $scope.$on('$ionicView.enter', function(e) {
+        if("is_logged_in" in window.localStorage) {
+            $state.go("app.dashboard");
+        }
+        else {
+            $state.go("login");
+        }
+    });
 })
 
 .controller('LoginController', function($scope, $state, $cordovaFacebook, UserManager, DbManager, GeoManager) {
@@ -71,13 +76,14 @@ angular.module('careapp.controllers', [])
         })
         .then(function(profile_me) {
             window.localStorage.is_logged_in = 1;
+
             $scope.fb_data.status = "Profile fetched. Loading..";
             // Redirect
             if(!profile_me.city) {
                 $state.go("app.location");
             }
             else if(!profile_me.passions) {
-                $state.go("passions.add");
+                $state.go("app.passions.add");
             }
             else {
                 $state.go("app.dashboard");
@@ -131,13 +137,13 @@ angular.module('careapp.controllers', [])
             DbManager.sync("profiles_db"); // Background Sync
             $scope.ui_data.status = "Profile updated. Moving on..";
             $ionicHistory.nextViewOptions({
-                disableBack: true
+                historyRoot: true
             });
             if("has_passions" in window.localStorage) {
                 $state.go("app.dashboard");
             }
             else {
-                $state.go("passions.add");
+                $state.go("app.passions.add");
             }
         })
         .catch(function(err) {
@@ -208,6 +214,10 @@ angular.module('careapp.controllers', [])
         ;
     };
 
+    var click_card = function(card) {
+        $state.go("app.dashboard");
+    };
+
     if(window.localStorage.cached_cards) {
         $scope.cards = JSON.parse(window.localStorage.cached_cards);
     }
@@ -217,6 +227,24 @@ angular.module('careapp.controllers', [])
     }
 
 
+})
+
+.controller('FeedController', function($scope, $state, $stateParams, DbManager) {
+    var passion_id = $stateParams.passion_id;
+    $scope.passion_id = passion_id;
+    DbManager.get("passions_db")
+    .then(function(passions_db) {
+        return passions_db.get(passion_id);
+    })
+    .then(function(passion) {
+        $scope.passion = passion;
+    })
+})
+
+.controller('MessagesController', function($scope, $state, $stateParams, DbManager) {
+})
+
+.controller('MembersController', function($scope, $state, $stateParams, DbManager) {
 })
 
 ;

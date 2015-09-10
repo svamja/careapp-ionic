@@ -112,7 +112,7 @@ angular.module('careapp.controllers')
     $scope.new_passion = {};
     $scope.add_passion = function() {
         $scope.new_passion.name = $scope.searchModel.value;
-        $state.go("passions.add_1");
+        $state.go("app.passions.add_1");
     }
 
     $scope.select_category = function(category) {
@@ -129,7 +129,7 @@ angular.module('careapp.controllers')
         })
 
         // Go back to Add Passions screen
-        $state.go("passions.add");
+        $state.go("app.passions.add");
 
     }
 
