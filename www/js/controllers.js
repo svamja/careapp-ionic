@@ -1,4 +1,39 @@
-angular.module('careapp.controllers', [])
+angular.module('careapp.controllers', ['yaru22.angular-timeago'])
+
+.directive('expandingTextarea', function() {
+  return {
+    restrict: 'A',
+    controller: function($scope, $element) {
+      $element.css('overflow-y','hidden');
+      $element.css('resize','none');
+      resetHeight();
+      adjustHeight();
+
+      function resetHeight() {
+        $element.css('height', 0 + 'px');
+      }
+
+      function adjustHeight() {
+        var height = angular.element($element)[0]
+          .scrollHeight;
+        $element.css('height', height + 'px');
+        $element.css('max-height', height + 'px');
+      }
+
+      function keyPress(event) {
+        // this handles backspace and delete
+        // if (_.contains([8, 46], event.keyCode)) {
+        if (event.keyCode == 8 || event.keyCode == 46) {
+          resetHeight();
+        }
+        adjustHeight();
+      }
+
+      $element.bind('keyup change blur', keyPress);
+
+    }
+  };
+})
 
 .controller('AppController', function($scope, $state, $ionicHistory) {
 
@@ -59,16 +94,21 @@ angular.module('careapp.controllers', [])
                 console.log(login_response);
                 throw "CN42";
             }
-            // Get Profiles DB on Local
-            return DbManager.get("profiles_db");
-        })
-        .then(function(profiles_db) {
-            // Upsert User Profile
-            return profiles_db.upsert(window.localStorage.user_id, function(doc) {
-                doc["type"] = "profile";
-                doc["last_seen"] = Date.now();
-                return doc;
-            });
+            // Save User on Profiles DB on Local
+            return DbManager.get("profiles_db")
+            .then(function(profiles_db) {
+                // Upsert User Profile
+                return profiles_db.upsert(window.localStorage.user_id, function(doc) {
+                    doc["type"] = "profile";
+                    doc["last_seen"] = Date.now();
+                    if(login_response.fb_picture) {
+                        doc['fb_picture'] = login_response.fb_picture;
+                    }
+                    doc['display_name'] = login_response.display_name;
+                    doc['gender'] = login_response.gender;
+                    return doc;
+                });
+            })
         })
         .then(function() {
             // Get User Profile from Local DB
@@ -214,10 +254,6 @@ angular.module('careapp.controllers', [])
         ;
     };
 
-    var click_card = function(card) {
-        $state.go("app.dashboard");
-    };
-
     if(window.localStorage.cached_cards) {
         $scope.cards = JSON.parse(window.localStorage.cached_cards);
     }
@@ -238,13 +274,86 @@ angular.module('careapp.controllers', [])
     })
     .then(function(passion) {
         $scope.passion = passion;
-    })
-})
-
-.controller('MessagesController', function($scope, $state, $stateParams, DbManager) {
+    });
 })
 
 .controller('MembersController', function($scope, $state, $stateParams, DbManager) {
+    $scope.members = [];
+    DbManager.get("profiles_db")
+    .then(function(profiles_db) {
+        return profiles_db.query("profiles/by_passion", {
+            key : $stateParams.passion_id
+        });
+    })
+    .then(function(result) {
+        for(i in result.rows) {
+            var member = result.rows[i].value;
+            $scope.members.push(member);
+        }
+    })
+    .catch(function(err) {
+        console.log(err);
+        //TODO: Show Error
+    })
+    ;
+
+})
+
+.controller('MessagesController', function($scope, $state, $stateParams, DbManager) {
+    $scope.messages = [];
+    $scope.chat = { text : "", class: "positive" };
+
+    var refresh_messages = function() {
+        $scope.messages = [];
+        DbManager.get("messages_db", true)
+        .then(function(messages_db) {
+            return messages_db.query("messages/by_passion_ts", {
+                startkey : [$stateParams.passion_id, 1],
+                endkey : [$stateParams.passion_id, Date.now() + 1000000],
+            });
+        })
+        .then(function(result) {
+            for(i in result.rows) {
+                var message = result.rows[i].value;
+                message.text = message.text.replace(/(?:\r\n|\r|\n)/g, '<br />');
+                $scope.messages.push(message);
+            }
+        })
+        .catch(function(err) {
+            console.log(err);
+            //TODO: Show Error
+        });
+    };
+
+    $scope.send_message = function() {
+        DbManager.get("messages_db")
+        .then(function(messages_db) {
+            return DbManager.me()
+            .then(function(profile_me) {
+                return messages_db.post({
+                    passion_id: $stateParams.passion_id,
+                    author_id: profile_me._id,
+                    author_name: profile_me.display_name,
+                    city: profile_me.city,
+                    fb_picture: profile_me.fb_picture,
+                    text: $scope.chat.text,
+                    posted_on: Date.now()
+                });
+            });
+        })
+        .then(function() {
+            $scope.chat.text = "";
+            refresh_messages();
+        })
+        .catch(function() {
+            $scope.chat.class = "assertive";
+        })
+        ;
+    };
+
+    refresh_messages();
+
+
 })
 
 ;

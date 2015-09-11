@@ -2,7 +2,13 @@
   <ion-nav-title>
     <img src='img/logo100.png' /> {{passion.name}}
   </ion-nav-title>
-  <ion-content class="padding">
-    <h1> Members </h1>
+  <ion-content>
+    <ion-list>
+      <ion-item ng-repeat="member in members" class="item-avatar">
+        <img ng-src="{{member.fb_picture}}">
+        <h2> {{member.display_name}} </h2>
+        <p> {{member.last_seen | timeAgo}} </p>
+      </ion-item>
+    </ion-list>
   </ion-content>
 </ion-view>

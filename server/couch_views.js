@@ -42,6 +42,26 @@
 }
 
 
+{
+   "_id": "_design/profiles",
+   "language": "javascript",
+   "views": {
+       "by_passion": {
+           "map": "function(doc) { if(doc.type != 'profile' || !doc.passions) return; for(var i = 0, len = doc.passions.length; i < len; i++) emit(doc.passions[i].id, doc); }"
+       }
+   }
+}
+
+{
+   "_id": "_design/messages",
+   "language": "javascript",
+   "views": {
+       "by_passion_ts": {
+           "map": "function(doc) { if(doc.passion_id && doc.posted_on) { emit([doc.passion_id, doc.posted_on], doc); } }"
+       }
+   }
+}
+
 // Filters
 
 

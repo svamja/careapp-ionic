@@ -92,6 +92,7 @@ angular.module('careapp', ['ionic', 'ngCordova', 'careapp.controllers', 'careapp
     .state('app.feed', {
         url: '/feed/:passion_id',
         abstract: true,
+        cache: false,
         views: {
             'mainContent': {
                 templateUrl: 'templates/feed.html',

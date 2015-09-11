@@ -59,12 +59,12 @@ angular.module('careapp.services', ['careapp.constants'])
             name : "careapp_messages_db",
             options :
             {
-                filter: 'filters/by_passions',
-                query_params: 
-                {
-                    "passions": window.localStorage.user_passions, 
-                    "city" :  window.localStorage.user_city
-                }
+                // filter: 'filters/by_passions',
+                // query_params: 
+                // {
+                //     "passions": window.localStorage.user_passions, 
+                //     "city" :  window.localStorage.user_city
+                // }
             },
             promise : false
         },
