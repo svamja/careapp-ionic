@@ -1,6 +1,6 @@
 angular.module('careapp.controllers')
 
-.controller('PassionsController', function($scope, $state, $ionicHistory, $q, DbManager) {
+.controller('PassionsController', function($scope, $state, $ionicHistory, $q, $timeout, DbManager) {
     $scope.ui_data = { button_text : "Skip" };
     $scope.user_passions = [];
     $scope.searchModel = { value: ""};
@@ -130,6 +130,11 @@ angular.module('careapp.controllers')
 
         // Go back to Add Passions screen
         $state.go("app.passions.add");
+        var prev_value = $scope.searchModel.value;
+        $scope.searchModel.value = "";
+        $timeout(function() {
+            $scope.searchModel.value = prev_value;
+        }, 1000);
 
     }
 

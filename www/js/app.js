@@ -1,10 +1,14 @@
 // CareApp
 
-angular.module('careapp', ['ionic', 'ngCordova', 'careapp.controllers', 'careapp.services'])
+angular.module('careapp', ['ionic','ionic.service.core','ionic.service.analytics', 'ngCordova', 'careapp.controllers', 'careapp.services'])
 
-.run(function($ionicPlatform) {
+.run(function($ionicPlatform, $ionicAnalytics) {
 
     $ionicPlatform.ready(function() {
+
+        // Register to ionic analytics
+        $ionicAnalytics.register();
+
         // Hide the accessory bar by default (remove this to show the accessory bar above the keyboard
         // for form inputs)
         if (window.cordova && window.cordova.plugins && window.cordova.plugins.Keyboard) {
