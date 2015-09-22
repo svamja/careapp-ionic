@@ -1,0 +1,88 @@
+
+
+<!-- Sep 22 2015 - locations screen rewritten -->
+
+<script>
+.controller('LocationsController', function($scope, $state, $ionicHistory, DbManager, GeoManager) {
+    $scope.ui_data = {
+        status: "Fetching location ..",
+        input_disabled : true
+    };
+    $scope.city_info = {};
+    $scope.manual_link_flag = false;
+
+    GeoManager.get_city_info()
+    .then(function(city_info) {
+        $scope.ui_data.status = "Location fetched!";
+        $scope.city_info = city_info;
+        $scope.manual_link_flag = true;
+    })
+    .catch(function(err) {
+        console.log(err);
+        $scope.ui_data.status = "Error fetching your location! Enter Manually.";
+        $scope.ui_data.input_disabled = false;
+    });
+
+    $scope.enable_manual_entry = function() {
+        $scope.ui_data.input_disabled = false;
+        $scope.city_info = {};
+    };
+
+    $scope.save = function() {
+        DbManager.get("profiles_db")
+        .then(function(profiles_db) {
+            return profiles_db.upsert(window.localStorage.user_id, function(doc) {
+                if(!doc.type) {
+                    doc["type"] = "profile";
+                }
+                doc["city_info"] = $scope.city_info;
+                doc['city'] = $scope.city_info.city;
+                return doc;
+            });
+        })
+        .then(function() {
+            DbManager.sync("profiles_db"); // Background Sync
+            $scope.ui_data.status = "Profile updated. Moving on..";
+            $ionicHistory.nextViewOptions({
+                historyRoot: true
+            });
+            if("has_passions" in window.localStorage) {
+                $state.go("app.dashboard");
+            }
+            else {
+                $state.go("app.passions.add");
+            }
+        })
+        .catch(function(err) {
+            $scope.ui_data.status = "Error: " + err;
+        })
+        ;
+    }
+})
+</script>
+
+<ion-view>
+  <ion-nav-title>
+    <img src='img/logo100.png' /> Your City
+  </ion-nav-title>
+  <form name="location_form">
+    <ion-content>
+      <div class="list" name="location_form">
+        <label class="item item-input">
+          <input type="text" ng-model="city_info.city" name="city" required="true" ng-disabled="ui_data.input_disabled">
+          <input type="hidden" ng-model="city_info.city_id" name="city_id">
+        </label>
+      </div>
+      <div class="center calm"> {{ui_data.status}} </div>
+      <div class="center" ng-show="manual_link_flag"> 
+        Doesn't look good. <a ng-click="enable_manual_entry()" href="#"> Enter manually. </a>
+      </div>
+
+    </ion-content>
+    <ion-footer-bar class="bar-positive tabs tabs-calm">
+      <a class="tab-item tab-item-active" ng-click="save(location_form)" ng-disabled="location_form.city.$invalid">
+        Save
+      </a>
+    </ion-footer-bar>
+  </form>
+</ion-view>

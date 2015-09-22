@@ -39,7 +39,7 @@ angular.module('careapp.controllers')
             DbManager.passion_ids(true); // Background refresh of local profile
             window.localStorage.has_passions = 1;
             $ionicHistory.nextViewOptions({
-                disableBack: true
+                historyRoot: true
             });
             $state.go("app.dashboard");
         })

@@ -2,24 +2,31 @@
   <ion-nav-title>
     <img src='img/logo100.png' /> Your City
   </ion-nav-title>
-  <form name="location_form">
-    <ion-content>
+  <ion-content id="div_location_content">
+    <div class="list">
+      <div class="item" ng-repeat="city in cities" ng-click="select_city(city)">
+        {{city.name}}
+      </div>
+      <div class="item" ng-click="ui.new_city = true">
+        Other ..
+      </div>
+    </div>
+    <div ng-show="ui.new_city">
+      <div>
+        <h4> Add your city </h4>
+      </div>
       <div class="list" name="location_form">
+        <div class="item" ng-click="show_countries($event)">
+          {{selected_country.name}}
+        </div>
         <label class="item item-input">
-          <input type="text" ng-model="city_info.city" name="city" required="true" ng-disabled="ui_data.input_disabled">
-          <input type="hidden" ng-model="city_info.city_id" name="city_id">
+          <input placeholder="City" type="text" ng-model="ui.city" name="city">
         </label>
       </div>
-      <div class="center calm"> {{ui_data.status}} </div>
-      <div class="center" ng-show="manual_link_flag"> 
-        Doesn't look good. <a ng-click="enable_manual_entry()" href="#"> Enter manually. </a>
+      <div>
+        <a class="button button-block" href="#" ng-click="add_city()"> Add and Select City </a>
       </div>
+    </div>
 
-    </ion-content>
-    <ion-footer-bar class="bar-positive tabs tabs-calm">
-      <a class="tab-item tab-item-active" ng-click="save(location_form)" ng-disabled="location_form.city.$invalid">
-        Save
-      </a>
-    </ion-footer-bar>
-  </form>
+  </ion-content>
 </ion-view>

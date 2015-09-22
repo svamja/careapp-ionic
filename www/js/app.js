@@ -56,6 +56,16 @@ angular.module('careapp', ['ionic','ionic.service.core','ionic.service.analytics
             }
         }
     })
+
+    .state('app.location_countries', {
+        url: '/location_countries',
+        views: {
+            'mainContent' : {
+                templateUrl: 'templates/location_countries.html',
+                controller: 'LocationsController'
+            }
+        }  
+    })
     
     .state('app.dashboard', {
         url: '/dashboard',

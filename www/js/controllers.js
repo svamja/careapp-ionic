@@ -51,8 +51,11 @@ angular.module('careapp.controllers', ['yaru22.angular-timeago'])
     $scope.menu_title = "Menu";
 })
 
-.controller('HomeController', function($scope, $state) {
+.controller('HomeController', function($scope, $state, $ionicHistory) {
     $scope.$on('$ionicView.enter', function(e) {
+        $ionicHistory.nextViewOptions({
+            historyRoot: true
+        });
         if("is_logged_in" in window.localStorage) {
             $state.go("app.dashboard");
         }
@@ -62,16 +65,14 @@ angular.module('careapp.controllers', ['yaru22.angular-timeago'])
     });
 })
 
-.controller('LoginController', function($scope, $state, $cordovaFacebook, UserManager, DbManager, GeoManager) {
+.controller('LoginController', function($scope, $state, $cordovaFacebook, UserManager, DbManager, GeoManager, $cordovaNetwork) {
     $scope.fb_data = { status: "Not connected" };
-
-    // Fetch Geolocation info in background.
-    GeoManager.get_city_info();
+    DbManager.sync("passions_db"); // Background Sync of Application Metadata - Interests, Categories, Cities
 
     $scope.login = function() {
 
-        //TODO: Handle No Internet use case
         $scope.fb_data.status = "Connecting ..";
+        console.log("user click: " + Date.now());
 
         if (window.cordova.platformId == "browser") {
             var appID = 1625721067678662;
@@ -82,16 +83,17 @@ angular.module('careapp.controllers', ['yaru22.angular-timeago'])
         // Call Facebook API
         $cordovaFacebook.login(["public_profile", "email", "user_friends"])
         .then(function(fb_response) {
+            console.log("fb replied: " + Date.now());
             if(!fb_response.status || fb_response.status != "connected") {
                 throw "CN34";
             }
-            $scope.fb_data.status = "Fetching Profile..";
-            // Create user on DB Server
+            $scope.fb_data.status = "Logging in..";
+            // Create/Verify user on DB Server
             return UserManager.login(fb_response);
         })
         .then(function(login_response) {
+            console.log("server replied: " + Date.now());
             if(login_response.status != "success" || !login_response.token) {
-                console.log(login_response);
                 throw "CN42";
             }
             // Save User on Profiles DB on Local
@@ -111,10 +113,14 @@ angular.module('careapp.controllers', ['yaru22.angular-timeago'])
             })
         })
         .then(function() {
+            console.log("profiled upserted: " + Date.now());
             // Get User Profile from Local DB
             return DbManager.me();
         })
         .then(function(profile_me) {
+            console.log("profiled fetched: " + Date.now());
+            DbManager.sync("profiles_db"); // Background Sync of user profile
+            console.log("sync submitted: " + Date.now());
             window.localStorage.is_logged_in = 1;
 
             $scope.fb_data.status = "Profile fetched. Loading..";
@@ -130,67 +136,113 @@ angular.module('careapp.controllers', ['yaru22.angular-timeago'])
             }
         })
         .catch(function (error) {
-            console.log(error);
-            $scope.fb_data.status = "Unexpected Error: " + error;
+
+            if(window.Connection) {
+                console.log(navigator.connection);
+            }
+            if(window.Connection && navigator.connection.type == Connection.NONE) {
+                $scope.fb_data.status = "No Internet Connection";
+            }
+            else {
+                console.log(error);
+                $scope.fb_data.status = "Unexpected Error: " + error;
+            }
         });
     }
 })
 
-.controller('LocationsController', function($scope, $state, $ionicHistory, DbManager, GeoManager) {
-    $scope.ui_data = {
-        status: "Fetching location ..",
-        input_disabled : true
-    };
-    $scope.city_info = {};
-    $scope.manual_link_flag = false;
+.controller('LocationsController', function($scope, $state, $ionicPopover, $ionicModal, DbManager) {
 
-    GeoManager.get_city_info()
-    .then(function(city_info) {
-        $scope.ui_data.status = "Location fetched!";
-        $scope.city_info = city_info;
-        $scope.manual_link_flag = true;
+    $scope.ui = { new_city : false, city : "" };
+    $scope.cities = [];
+    $scope.countries = [];
+    $scope.selected_country = {};
+
+    DbManager.get("passions_db")
+    .then(function(passions_db) {
+        return passions_db.query("cities");
+    })
+    .then(function(result) {
+        console.log(result);
+        for(i in result.rows) {
+            $scope.cities.push(result.rows[i].value);
+        }
     })
     .catch(function(err) {
         console.log(err);
-        $scope.ui_data.status = "Error fetching your location! Enter Manually.";
-        $scope.ui_data.input_disabled = false;
     });
 
-    $scope.enable_manual_entry = function() {
-        $scope.ui_data.input_disabled = false;
-        $scope.city_info = {};
-    };
+    DbManager.get("passions_db")
+    .then(function(passions_db) {
+        return passions_db.query("countries");
+    })
+    .then(function(result) {
+        var country;
+        for(i in result.rows) {
+            country = result.rows[i].value;
+            //TODO: Localize this based on GeoManager's input
+            if(country.code == 'in') $scope.selected_country = country;
+            $scope.countries.push(country);
+        }
+    })
+    .catch(function(err) {
+        console.log(err);
+    });
 
-    $scope.save = function() {
+
+    $scope.select_city = function(city) {
         DbManager.get("profiles_db")
         .then(function(profiles_db) {
             return profiles_db.upsert(window.localStorage.user_id, function(doc) {
                 if(!doc.type) {
                     doc["type"] = "profile";
                 }
-                doc["city_info"] = $scope.city_info;
-                doc['city'] = $scope.city_info.city;
+                doc['city'] = city.name;
+                doc['city_id'] = city._id;
                 return doc;
             });
         })
         .then(function() {
-            DbManager.sync("profiles_db"); // Background Sync
-            $scope.ui_data.status = "Profile updated. Moving on..";
-            $ionicHistory.nextViewOptions({
-                historyRoot: true
-            });
-            if("has_passions" in window.localStorage) {
-                $state.go("app.dashboard");
-            }
-            else {
-                $state.go("app.passions.add");
-            }
+            DbManager.sync("profiles_db");
         })
         .catch(function(err) {
-            $scope.ui_data.status = "Error: " + err;
-        })
-        ;
-    }
+            $scope.ui.status = "Error: " + err;
+        });
+        $state.go("app.passions.add");
+    };
+
+    $ionicModal.fromTemplateUrl('templates/country_selector.html', {
+        scope: $scope
+    })
+    .then(function(modal) {
+        $scope.modal = modal;
+    });
+
+    $scope.show_countries = function($event) {
+        $scope.modal.show();
+    };
+
+    $scope.select_country = function(country) {
+        $scope.selected_country = country;
+        $scope.modal.hide();
+    };
+
+    $scope.add_city = function() {
+        var city = {};
+        city.name = $scope.ui.city;
+        city.country_id = $scope.selected_country._id;
+        city.country = $scope.selected_country.name;
+        city.slug = DbManager.slug(city.name + ' ' + city.country);
+        city.type = 'city';
+        city._id = 'cit-' + city.slug;
+        console.log(city);
+        DbManager.get("passions_db")
+        .then(function(passions_db) {
+            return passions_db.put(city);
+        });
+        $scope.select_city(city);
+    };
+
 })
 
 .controller('DashboardController', function($scope, $state, $ionicHistory, DbManager) {
@@ -247,21 +299,14 @@ angular.module('careapp.controllers', ['yaru22.angular-timeago'])
             $scope.cards = $scope.cards.sort(function(a,b) {
                 return a.order - b.order;
             });
-            window.localStorage.cached_cards = JSON.stringify($scope.cards);
             $scope.$broadcast('scroll.refreshComplete');
             $scope.show_loading = false;
         })
         ;
     };
 
-    if(window.localStorage.cached_cards) {
-        $scope.cards = JSON.parse(window.localStorage.cached_cards);
-    }
-    else {
-        $scope.refresh();
-        $scope.show_loading = true;
-    }
-
+    $scope.refresh();
+    $scope.show_loading = true;
 
 })
 

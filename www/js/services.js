@@ -128,17 +128,21 @@ angular.module('careapp.services', ['careapp.constants'])
         });
         dbs[db_id].promise = deferred.promise;
         return dbs[db_id].promise;
-    }
+    };
 
-    var get_promise = function(db_id, refresh) {
+    var get = function(db_id, refresh) {
         if(!dbs[db_id]) {
             return $q.reject("Invalid db_id");
         }
         if(dbs[db_id].promise && !refresh) {
             return dbs[db_id].promise;
         }
+        if(!refresh) {
+            var local_db = new PouchDB(dbs[db_id].name);
+            return $q.when(local_db);
+        }
         return sync(db_id);
-    }
+    };
 
     var me = function(refresh) {
         if(window.localStorage.profile_me && !refresh)
@@ -146,7 +150,7 @@ angular.module('careapp.services', ['careapp.constants'])
             var profile_me = JSON.parse(window.localStorage.profile_me);
             return $q.when(profile_me);
         }
-        return get_promise("profiles_db", refresh)
+        return get("profiles_db", refresh)
         .then(function(profiles_db) {
             return profiles_db.get(window.localStorage.user_id);
         })
@@ -176,7 +180,7 @@ angular.module('careapp.services', ['careapp.constants'])
     };
 
     return {
-        get : get_promise,
+        get : get,
         sync: sync,
         slug: slug,
         me: me,
