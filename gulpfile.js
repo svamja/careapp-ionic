@@ -65,6 +65,7 @@ var settings = JSON.parse(fs.readFileSync('./config/' + filename, 'utf8'));
 
 gulp.task('setup-env', function() {
     gulp.src(['config/constants.js'])
+        .pipe(replace('GULP_ENV_NAME', env))
         .pipe(replace('GULP_ENV_DB_URL', settings.GULP_ENV_DB_URL))
         .pipe(replace('GULP_ENV_API_URL', settings.GULP_ENV_API_URL))
         .pipe(gulp.dest('www/js'));

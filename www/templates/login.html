@@ -11,7 +11,11 @@
     <div class="center calm"> {{fb_data.status}} </div>
     <div class="center">
       Don't have Facebook account? <strong> Really?  </strong>
-      <a href="#"> Click this </a>
+      <a href="https://www.facebook.com/r.php"> Click this </a>
+    </div>
+    <div class="padding"></div>
+    <div class="center" ng-show="EnvName != 'prod'">
+      To wipe locally stored data, <a href="#" ng-click="clear_storage()">click this</a>.
     </div>
   </ion-content>
 </ion-view>

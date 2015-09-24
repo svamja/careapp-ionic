@@ -16,3 +16,5 @@ www/lib
 # and so ignoring the folder here
 wiki
 
+# webstorm config files
+.idea

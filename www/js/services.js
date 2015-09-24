@@ -144,6 +144,21 @@ angular.module('careapp.services', ['careapp.constants'])
         return sync(db_id);
     };
 
+    var get_local = function(db_id) {
+        return new PouchDB(dbs[db_id].name);
+    };
+
+    var get_remote = function(db_id) {
+        var auth_options = {
+            username: window.localStorage.user_id,
+            password: window.localStorage.user_token
+        };
+        var remote_db = new PouchDB(remote_base_url + dbs[db_id].name, {
+            auth: auth_options
+        });
+        return remote_db;
+    };
+
     var me = function(refresh) {
         if(window.localStorage.profile_me && !refresh)
         {
@@ -181,6 +196,8 @@ angular.module('careapp.services', ['careapp.constants'])
 
     return {
         get : get,
+        get_local: get_local,
+        get_remote: get_remote,
         sync: sync,
         slug: slug,
         me: me,

@@ -1,0 +1,29 @@
+<ion-view>
+  <ion-nav-title>
+    <img src='img/logo100.png' /> Sync in Progress
+  </ion-nav-title>
+  <ion-content>
+    <div class="sync-progress-wrapper">
+      <div class="sync-progress-caption">
+        {{ui.sync_caption}}
+      </div>
+      <div class="sync-progress-bar">
+        <div class="rect1"></div>
+        <div class="rect2"></div>
+        <div class="rect3"></div>
+        <div class="rect4"></div>
+        <div class="rect5"></div>
+      </div>
+      <!-- <div ng-show="progress.passions.value && progress.passions.max"> -->
+      <div>
+        syncing cities, countries, metadata ..
+        <progress value="{{progress.passions.value}}" max="{{progress.passions.max}}"></progress>
+      </div>
+      <!-- <div ng-show="progress.profiles.value && progress.profiles.max"> -->
+      <div>
+        syncing profiles ..
+        <progress value="{{progress.profiles.value}}" max="{{progress.profiles.max}}"></progress>
+      </div>
+    </div>
+  </ion-content>
+</ion-view>

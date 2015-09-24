@@ -1,4 +1,4 @@
-/* Empty. Add your own CSS if you like */
+/* All Screens */
 
 .center {
      text-align: center;
@@ -9,8 +9,78 @@
     vertical-align: middle;
 }
 
+/* Dashboard */
 
 .dashboard .card a {
     text-decoration: none;
     color: inherit;
 }
+
+/* Sync Progress Bar */
+/*
+Taken from - http://tobiasahlin.com/spinkit/
+*/
+
+.sync-progress-wrapper {
+    padding: 10em 1em 1em 1em;
+}
+
+.sync-progress-bar {
+    margin: 1px auto;
+    width: 8em;
+    height: 4em;
+    text-align: center;
+    font-size: 1.2em;
+}
+
+.sync-progress-bar > div {
+    background-color: #333;
+    height: 100%;
+    width: 0.8em;
+    display: inline-block;
+
+    -webkit-animation: sk-stretchdelay 1.2s infinite ease-in-out;
+    animation: sk-stretchdelay 1.2s infinite ease-in-out;
+}
+
+.sync-progress-bar .rect2 {
+    -webkit-animation-delay: -1.1s;
+    animation-delay: -1.1s;
+}
+
+.sync-progress-bar .rect3 {
+    -webkit-animation-delay: -1.0s;
+    animation-delay: -1.0s;
+}
+
+.sync-progress-bar .rect4 {
+    -webkit-animation-delay: -0.9s;
+    animation-delay: -0.9s;
+}
+
+.sync-progress-bar .rect5 {
+    -webkit-animation-delay: -0.8s;
+    animation-delay: -0.8s;
+}
+
+@-webkit-keyframes sk-stretchdelay {
+    0%, 40%, 100% { -webkit-transform: scaleY(0.4) }
+    20% { -webkit-transform: scaleY(1.0) }
+}
+
+@keyframes sk-stretchdelay {
+    0%, 40%, 100% {
+        transform: scaleY(0.4);
+        -webkit-transform: scaleY(0.4);
+    }  20% {
+           transform: scaleY(1.0);
+           -webkit-transform: scaleY(1.0);
+       }
+}
+
+.sync-progress-caption {
+    padding: 1em 0;
+    text-align: center;
+    font-size: 0.8em;
+}
+

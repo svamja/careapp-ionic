@@ -1,41 +1,8 @@
 angular.module('careapp.controllers', ['yaru22.angular-timeago'])
 
-.directive('expandingTextarea', function() {
-  return {
-    restrict: 'A',
-    controller: function($scope, $element) {
-      $element.css('overflow-y','hidden');
-      $element.css('resize','none');
-      resetHeight();
-      adjustHeight();
+.controller('AppController', function($scope, $state, $ionicHistory, EnvName) {
 
-      function resetHeight() {
-        $element.css('height', 0 + 'px');
-      }
-
-      function adjustHeight() {
-        var height = angular.element($element)[0]
-          .scrollHeight;
-        $element.css('height', height + 'px');
-        $element.css('max-height', height + 'px');
-      }
-
-      function keyPress(event) {
-        // this handles backspace and delete
-        // if (_.contains([8, 46], event.keyCode)) {
-        if (event.keyCode == 8 || event.keyCode == 46) {
-          resetHeight();
-        }
-        adjustHeight();
-      }
-
-      $element.bind('keyup change blur', keyPress);
-
-    }
-  };
-})
-
-.controller('AppController', function($scope, $state, $ionicHistory) {
+    $scope.EnvName = EnvName;
 
     $scope.logout = function() {
         window.localStorage.removeItem("is_logged_in");
@@ -46,7 +13,7 @@ angular.module('careapp.controllers', ['yaru22.angular-timeago'])
         $ionicHistory.nextViewOptions({
             historyRoot: true
         });
-        $state.go("login");
+        $state.go("login.1");
     };
     $scope.menu_title = "Menu";
 })
@@ -60,19 +27,80 @@ angular.module('careapp.controllers', ['yaru22.angular-timeago'])
             $state.go("app.dashboard");
         }
         else {
-            $state.go("login");
+            $state.go("login.1");
         }
     });
 })
 
-.controller('LoginController', function($scope, $state, $cordovaFacebook, UserManager, DbManager, GeoManager, $cordovaNetwork) {
+.controller('LoginController', function($scope, $state, $cordovaFacebook, $cordovaNetwork, $timeout,
+                                        UserManager, DbManager, GeoManager, EnvName)
+{
+    $scope.EnvName = EnvName;
+
     $scope.fb_data = { status: "Not connected" };
-    DbManager.sync("passions_db"); // Background Sync of Application Metadata - Interests, Categories, Cities
+
+    $scope.syncs = {};
+    $scope.ui = {};
+    $scope.progress = { "passions" : {}, "profiles" : {} };
+    var next_state = "app.dashboard";
+
+    var refresh_sync = function() {
+        if($scope.syncs['passions'] == 'complete' && $scope.syncs['profiles'] == 'complete') {
+            $state.go(next_state);
+            return;
+        }
+        if($scope.progress.passions.value && $scope.progress.profiles.value &&
+            $scope.progress.passions.value == $scope.progress.passions.max &&
+            $scope.progress.profiles.value == $scope.progress.profiles.max)
+        {
+            $state.go(next_state);
+            return;
+        }
+        DbManager.get_local("passions_db").info().then(function(result) {
+            $scope.progress.passions.value = result.doc_count;
+        });
+        DbManager.get_local("profiles_db").info().then(function(result) {
+            $scope.progress.profiles.value = result.doc_count;
+        });
+        $timeout(refresh_sync, 3000);
+    };
+
+    var flash_sync_progress = function() {
+        $state.go("login.2");
+        DbManager.get_remote("passions_db").info().then(function(result) {
+            $scope.progress.passions.max = result.doc_count;
+        });
+        DbManager.get_remote("profiles_db").info().then(function(result) {
+            $scope.progress.profiles.max = result.doc_count;
+        });
+        refresh_sync();
+    }
+
+    var init_background_sync = function() {
+        $scope.syncs['passions'] = 'in_progress';
+        DbManager.sync("passions_db")
+        .then(function() {
+            $scope.syncs['passions'] = 'complete';
+        })
+        .catch(function(err) {
+            $scope.syncs['passions'] = 'error';
+        });
+
+        $scope.syncs['profiles'] = 'in_progress';
+        DbManager.sync("profiles_db")
+        .then(function() {
+            $scope.syncs['profiles'] = 'complete';
+        })
+        .catch(function(err) {
+            $scope.syncs['profiles'] = 'error';
+        });
+
+        $timeout(flash_sync_progress, 2000);
+    };
 
     $scope.login = function() {
 
         $scope.fb_data.status = "Connecting ..";
-        console.log("user click: " + Date.now());
 
         if (window.cordova.platformId == "browser") {
             var appID = 1625721067678662;
@@ -83,7 +111,6 @@ angular.module('careapp.controllers', ['yaru22.angular-timeago'])
         // Call Facebook API
         $cordovaFacebook.login(["public_profile", "email", "user_friends"])
         .then(function(fb_response) {
-            console.log("fb replied: " + Date.now());
             if(!fb_response.status || fb_response.status != "connected") {
                 throw "CN34";
             }
@@ -92,54 +119,48 @@ angular.module('careapp.controllers', ['yaru22.angular-timeago'])
             return UserManager.login(fb_response);
         })
         .then(function(login_response) {
-            console.log("server replied: " + Date.now());
             if(login_response.status != "success" || !login_response.token) {
                 throw "CN42";
             }
-            // Save User on Profiles DB on Local
-            return DbManager.get("profiles_db")
-            .then(function(profiles_db) {
-                // Upsert User Profile
-                return profiles_db.upsert(window.localStorage.user_id, function(doc) {
-                    doc["type"] = "profile";
-                    doc["last_seen"] = Date.now();
-                    if(login_response.fb_picture) {
-                        doc['fb_picture'] = login_response.fb_picture;
-                    }
-                    doc['display_name'] = login_response.display_name;
-                    doc['gender'] = login_response.gender;
-                    return doc;
-                });
-            })
-        })
-        .then(function() {
-            console.log("profiled upserted: " + Date.now());
-            // Get User Profile from Local DB
-            return DbManager.me();
-        })
-        .then(function(profile_me) {
-            console.log("profiled fetched: " + Date.now());
-            DbManager.sync("profiles_db"); // Background Sync of user profile
-            console.log("sync submitted: " + Date.now());
-            window.localStorage.is_logged_in = 1;
 
-            $scope.fb_data.status = "Profile fetched. Loading..";
-            // Redirect
-            if(!profile_me.city) {
-                $state.go("app.location");
-            }
-            else if(!profile_me.passions) {
-                $state.go("app.passions.add");
+            // If existing profile, just return it
+            var profile = {};
+            if(login_response['profile']) {
+                profile = login_response['profile'];
             }
             else {
-                $state.go("app.dashboard");
+                // Insert to local db
+                profile['_id'] = window.localStorage.user_id;
+                profile["type"] = "profile";
+                profile["last_seen"] = Date.now();
+                if(login_response.fb_picture) {
+                    profile['fb_picture'] = login_response.fb_picture;
+                }
+                profile['display_name'] = login_response.display_name;
+                profile['gender'] = login_response.gender;
+                DbManager.get("profiles_db")
+                .then(function(profiles_db) {
+                    profiles_db.put(profile);
+                });
             }
+            return profile;
+        })
+        .then(function(profile_me) {
+            window.localStorage.is_logged_in = 1;
+            $scope.fb_data.status = "Profile fetched. Loading..";
+            // Next Screens
+            if(!profile_me.city) {
+                next_state = "app.location";
+            }
+            else if(!profile_me.passions) {
+                next_state = "app.passions.add";
+            }
+            else {
+                next_state = "app.dashboard";
+            }
+            init_background_sync();
         })
         .catch(function (error) {
-
-            if(window.Connection) {
-                console.log(navigator.connection);
-            }
             if(window.Connection && navigator.connection.type == Connection.NONE) {
                 $scope.fb_data.status = "No Internet Connection";
             }
@@ -148,7 +169,28 @@ angular.module('careapp.controllers', ['yaru22.angular-timeago'])
                 $scope.fb_data.status = "Unexpected Error: " + error;
             }
         });
-    }
+    };
+
+    $scope.clear_storage = function() {
+        indexedDB.webkitGetDatabaseNames().onsuccess = function(sender,args)
+        {
+            for(var i=0; i < sender.target.result.length; i++) {
+                indexedDB.deleteDatabase(sender.target.result[i]);
+            }
+        };
+        localStorage.clear();
+
+        var cookies = document.cookie.split(";");
+
+        for (var i = 0; i < cookies.length; i++) {
+            var cookie = cookies[i];
+            var eqPos = cookie.indexOf("=");
+            var name = eqPos > -1 ? cookie.substr(0, eqPos) : cookie;
+            document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT";
+        }
+    };
+
+
 })
 
 .controller('LocationsController', function($scope, $state, $ionicPopover, $ionicModal, DbManager) {
@@ -157,16 +199,17 @@ angular.module('careapp.controllers', ['yaru22.angular-timeago'])
     $scope.cities = [];
     $scope.countries = [];
     $scope.selected_country = {};
+    $scope.show_loading = true;
 
     DbManager.get("passions_db")
     .then(function(passions_db) {
         return passions_db.query("cities");
     })
     .then(function(result) {
-        console.log(result);
         for(i in result.rows) {
             $scope.cities.push(result.rows[i].value);
         }
+        $scope.show_loading = false;
     })
     .catch(function(err) {
         console.log(err);
@@ -235,7 +278,6 @@ angular.module('careapp.controllers', ['yaru22.angular-timeago'])
         city.slug = DbManager.slug(city.name + ' ' + city.country);
         city.type = 'city';
         city._id = 'cit-' + city.slug;
-        console.log(city);
         DbManager.get("passions_db")
         .then(function(passions_db) {
             return passions_db.put(city);
@@ -302,6 +344,9 @@ angular.module('careapp.controllers', ['yaru22.angular-timeago'])
             $scope.$broadcast('scroll.refreshComplete');
             $scope.show_loading = false;
         })
+        .catch(function(err) {
+            console.log(err);
+        })
         ;
     };
 
@@ -311,6 +356,7 @@ angular.module('careapp.controllers', ['yaru22.angular-timeago'])
 })
 
 .controller('FeedController', function($scope, $state, $stateParams, DbManager) {
+
     var passion_id = $stateParams.passion_id;
     $scope.passion_id = passion_id;
     DbManager.get("passions_db")
@@ -322,7 +368,8 @@ angular.module('careapp.controllers', ['yaru22.angular-timeago'])
     });
 })
 
-.controller('MembersController', function($scope, $state, $stateParams, DbManager) {
+.controller('MembersController', function($scope, $state, $stateParams, $ionicHistory, DbManager) {
+
     $scope.members = [];
     DbManager.get("profiles_db")
     .then(function(profiles_db) {
@@ -344,9 +391,17 @@ angular.module('careapp.controllers', ['yaru22.angular-timeago'])
 
 })
 
-.controller('MessagesController', function($scope, $state, $stateParams, DbManager) {
+.controller('MessagesController', function($scope, $state, $stateParams, $ionicHistory, DbManager) {
+
     $scope.messages = [];
     $scope.chat = { text : "", class: "positive" };
+
+    $scope.stats = {
+        chats : 32,
+        events: 2,
+        followers: 82,
+    };
+
 
     var refresh_messages = function() {
         $scope.messages = [];
@@ -397,7 +452,6 @@ angular.module('careapp.controllers', ['yaru22.angular-timeago'])
     };
 
     refresh_messages();
-
 
 })
 

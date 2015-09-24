@@ -3,7 +3,10 @@
     <img src='img/logo100.png' /> Your City
   </ion-nav-title>
   <ion-content id="div_location_content">
-    <div class="list">
+    <div class="padding center" ng-show="show_loading">
+      <ion-spinner icon="spiral"></ion-spinner> Loading cities ..
+    </div>
+    <div class="list" ng-show="!show_loading">
       <div class="item" ng-repeat="city in cities" ng-click="select_city(city)">
         {{city.name}}
       </div>

@@ -3,6 +3,19 @@
     <img src='img/logo100.png' /> {{passion.name}}
   </ion-nav-title>
   <ion-content>
+    <div class="row">
+      <div class="col center positive">
+        <i class="icon ion-ios-chatboxes"></i> <span ng-show="stats.chats > 0"> {{stats.chats}} </span>
+      </div>
+      <div class="col center"> <!-- ng-class="{balanced : stats.events > 0}" -->
+        <i class="icon ion-calendar"></i> <span ng-show="stats.events > 0"> {{stats.events}} </span>
+      </div>
+      <div class="col center">
+        <a href="#/feed/{{passion_id}}/members">
+          <i class="icon ion-person-stalker"></i> {{stats.followers}}
+        </a>
+      </div>
+    </div>
     <ion-list>
       <ion-item ng-repeat="message in messages" class="item-avatar">
         <img ng-src="{{message.fb_picture}}">

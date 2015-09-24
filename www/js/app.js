@@ -1,13 +1,13 @@
 // CareApp
 
-angular.module('careapp', ['ionic','ionic.service.core','ionic.service.analytics', 'ngCordova', 'careapp.controllers', 'careapp.services'])
+angular.module('careapp', ['ionic', /*'ionic.service.core','ionic.service.analytics',*/ 'ngCordova', 'careapp.controllers', 'careapp.services'])
 
-.run(function($ionicPlatform, $ionicAnalytics) {
+.run(function($ionicPlatform/*, $ionicAnalytics */) {
 
     $ionicPlatform.ready(function() {
 
         // Register to ionic analytics
-        $ionicAnalytics.register();
+        // $ionicAnalytics.register();
 
         // Hide the accessory bar by default (remove this to show the accessory bar above the keyboard
         // for form inputs)
@@ -36,8 +36,19 @@ angular.module('careapp', ['ionic','ionic.service.core','ionic.service.analytics
 
     .state('login', {
         url: '/login',
-        templateUrl: 'templates/login.html',
+        abstract: true,
+        template: '<ion-nav-view></ion-nav-view>',
         controller: 'LoginController'
+    })
+
+    .state('login.1', {
+        url: '/1',
+        templateUrl: 'templates/login.html'
+    })
+
+    .state('login.2', {
+        url: '/2',
+        templateUrl: 'templates/sync_progress.html'
     })
 
     .state('app', {
@@ -57,16 +68,6 @@ angular.module('careapp', ['ionic','ionic.service.core','ionic.service.analytics
         }
     })
 
-    .state('app.location_countries', {
-        url: '/location_countries',
-        views: {
-            'mainContent' : {
-                templateUrl: 'templates/location_countries.html',
-                controller: 'LocationsController'
-            }
-        }  
-    })
-    
     .state('app.dashboard', {
         url: '/dashboard',
         views: {
@@ -103,13 +104,14 @@ angular.module('careapp', ['ionic','ionic.service.core','ionic.service.analytics
         templateUrl: 'templates/passion_add_2.html'
     })
 
+
     .state('app.feed', {
         url: '/feed/:passion_id',
         abstract: true,
         cache: false,
         views: {
             'mainContent': {
-                templateUrl: 'templates/feed.html',
+                template: '<ion-nav-view></ion-nav-view>',
                 controller: "FeedController"
             }
         }
@@ -117,24 +119,15 @@ angular.module('careapp', ['ionic','ionic.service.core','ionic.service.analytics
 
     .state('app.feed.messages', {
         url: '/messages',
-        views: {
-            'tab-messages': {
-                templateUrl: 'templates/messages.html',
-                controller: 'MessagesController'
-            }
-        }
+        templateUrl: 'templates/messages.html',
+        controller: 'MessagesController'
     })
 
     .state('app.feed.members', {
         url: '/members',
-        views: {
-            'tab-members': {
-                templateUrl: 'templates/members.html',
-                controller: 'MembersController'
-            }
-        }
+        templateUrl: 'templates/members.html',
+        controller: 'MembersController'
     })
-
 
     ;
 
@@ -188,6 +181,41 @@ angular.module('careapp', ['ionic','ionic.service.core','ionic.service.analytics
                     '<input type="search" placeholder="{{placeholder}}" ng-model="searchModel.value">' +
                     '<i ng-if="searchModel.value.length > 0" ng-click="clearSearch()" class="icon ion-close"></i>' +
                   '</div>'
+    };
+})
+
+.directive('expandingTextarea', function() {
+    return {
+        restrict: 'A',
+        controller: function($scope, $element) {
+            $element.css('overflow-y','hidden');
+            $element.css('resize','none');
+            resetHeight();
+            adjustHeight();
+
+            function resetHeight() {
+                $element.css('height', 0 + 'px');
+            }
+
+            function adjustHeight() {
+                var height = angular.element($element)[0]
+                    .scrollHeight;
+                $element.css('height', height + 'px');
+                $element.css('max-height', height + 'px');
+            }
+
+            function keyPress(event) {
+                // this handles backspace and delete
+                // if (_.contains([8, 46], event.keyCode)) {
+                if (event.keyCode == 8 || event.keyCode == 46) {
+                    resetHeight();
+                }
+                adjustHeight();
+            }
+
+            $element.bind('keyup change blur', keyPress);
+
+        }
     };
 })
 
