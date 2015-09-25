@@ -16,7 +16,6 @@ angular.module('careapp.controllers')
         }
     });
 
-
     DbManager.me()
     .then(function(me) {
         if(me && me.passions) {
@@ -53,7 +52,7 @@ angular.module('careapp.controllers')
             });
         })
         .then(function(res) {
-            DbManager.sync(true); // background sync of user profile
+            DbManager.sync("profiles_db"); // background sync of user profile
             $ionicHistory.nextViewOptions({
                 historyRoot: true
             });

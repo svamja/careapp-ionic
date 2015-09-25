@@ -3,19 +3,28 @@
     <img src='img/logo100.png' /> {{passion.name}}
   </ion-nav-title>
   <ion-content>
+
     <div class="row">
-      <div class="col center positive">
-        <i class="icon ion-ios-chatboxes"></i> <span ng-show="stats.chats > 0"> {{stats.chats}} </span>
+      <div class="col center calm">
+        <span ng-click="switch_to('messages')">
+          <i class="icon ion-ios-chatboxes" style="font-size: 1.6em;"></i> 
+          <span ng-show="stats.chats > 0" style="font-size: 0.9em; "> {{stats.chats}} </span>
+        </span>
       </div>
-      <div class="col center"> <!-- ng-class="{balanced : stats.events > 0}" -->
-        <i class="icon ion-calendar"></i> <span ng-show="stats.events > 0"> {{stats.events}} </span>
+      <div class="col center dark">
+        <span ng-click="switch_to('events')">
+          <i class="icon ion-ios-calendar" style="font-size: 1.6em;"></i> 
+          <span ng-show="stats.events > 0" style="font-size: 0.9em; "> {{stats.events}} </span>
+        </span>
       </div>
-      <div class="col center">
-        <a href="#/feed/{{passion_id}}/members">
-          <i class="icon ion-person-stalker"></i> {{stats.followers}}
-        </a>
+      <div class="col center dark">
+        <span ng-click="switch_to('members')">
+          <i class="icon ion-person-stalker" style="font-size: 1.6em;"></i> 
+          <span style="font-size: 0.9em; "> {{stats.followers}} </span>
+        </span>
       </div>
     </div>
+
     <ion-list>
       <ion-item ng-repeat="message in messages" class="item-avatar">
         <img ng-src="{{message.fb_picture}}">

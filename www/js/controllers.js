@@ -43,43 +43,51 @@ angular.module('careapp.controllers', ['yaru22.angular-timeago'])
 
     $scope.syncs = {};
     $scope.ui = {};
-    $scope.progress = { "passions" : {}, "profiles" : {} };
+    $scope.progress = { "passions" : {}, "profiles" : {}, "messages" : {} };
     var next_state = "app.dashboard";
 
-    var refresh_sync = function() {
-        if($scope.syncs['passions'] == 'complete' && $scope.syncs['profiles'] == 'complete') {
-            $state.go(next_state);
-            return;
-        }
-        if($scope.progress.passions.value && $scope.progress.profiles.value &&
-            $scope.progress.passions.value == $scope.progress.passions.max &&
-            $scope.progress.profiles.value == $scope.progress.profiles.max)
+    var refresh_sync = function(first_time) {
+        if($scope.syncs['passions'] == 'complete' && 
+            $scope.syncs['profiles'] == 'complete' &&
+            $scope.syncs['messages'] == 'complete') 
         {
             $state.go(next_state);
             return;
         }
+        if($scope.progress.passions.value && $scope.progress.profiles.value && $scope.progress.messages.value &&
+            $scope.progress.passions.value == $scope.progress.passions.max &&
+            $scope.progress.profiles.value == $scope.progress.profiles.max &&
+            $scope.progress.messages.value == $scope.progress.messages.max)
+        {
+            $state.go(next_state);
+            return;
+        }
+
         DbManager.get_local("passions_db").info().then(function(result) {
             $scope.progress.passions.value = result.doc_count;
         });
         DbManager.get_local("profiles_db").info().then(function(result) {
             $scope.progress.profiles.value = result.doc_count;
         });
-        $timeout(refresh_sync, 3000);
+        DbManager.get_local("messages_db").info().then(function(result) {
+            $scope.progress.messages.value = result.doc_count;
+        });
+        if(first_time) {
+            $timeout(refresh_sync, 50);
+        }
+        else {
+            $timeout(refresh_sync, 2000);
+        }
     };
 
     var flash_sync_progress = function() {
         $state.go("login.2");
-        DbManager.get_remote("passions_db").info().then(function(result) {
-            $scope.progress.passions.max = result.doc_count;
-        });
-        DbManager.get_remote("profiles_db").info().then(function(result) {
-            $scope.progress.profiles.max = result.doc_count;
-        });
-        refresh_sync();
-    }
+        refresh_sync(true);
+    };
 
     var init_background_sync = function() {
         $scope.syncs['passions'] = 'in_progress';
+
         DbManager.sync("passions_db")
         .then(function() {
             $scope.syncs['passions'] = 'complete';
@@ -97,7 +105,26 @@ angular.module('careapp.controllers', ['yaru22.angular-timeago'])
             $scope.syncs['profiles'] = 'error';
         });
 
-        $timeout(flash_sync_progress, 2000);
+        DbManager.sync("messages_db")
+        .then(function() {
+            $scope.syncs['messages'] = 'complete';
+        })
+        .catch(function(err) {
+            $scope.syncs['messages'] = 'error';
+        });
+
+
+        DbManager.get_remote("passions_db").info().then(function(result) {
+            $scope.progress.passions.max = result.doc_count;
+        });
+        DbManager.get_remote("profiles_db").info().then(function(result) {
+            $scope.progress.profiles.max = result.doc_count;
+        });
+        DbManager.get_remote("messages_db").info().then(function(result) {
+            $scope.progress.messages.max = result.doc_count;
+        });
+
+        $timeout(flash_sync_progress, 1000);
     };
 
     $scope.login = function() {
@@ -363,7 +390,7 @@ angular.module('careapp.controllers', ['yaru22.angular-timeago'])
 
 })
 
-.controller('FeedController', function($scope, $state, $stateParams, DbManager) {
+.controller('FeedController', function($scope, $state, $stateParams, $ionicHistory, DbManager) {
 
     var passion_id = $stateParams.passion_id;
     $scope.passion_id = passion_id;
@@ -374,6 +401,14 @@ angular.module('careapp.controllers', ['yaru22.angular-timeago'])
     .then(function(passion) {
         $scope.passion = passion;
     });
+
+    $scope.switch_to = function(sub_state) {
+        $ionicHistory.nextViewOptions({
+            disableAnimate: true
+        });
+        $state.go("app.feed." + sub_state, { passion_id: passion_id });
+    };
+
 })
 
 .controller('MembersController', function($scope, $state, $stateParams, $ionicHistory, DbManager) {
@@ -403,13 +438,6 @@ angular.module('careapp.controllers', ['yaru22.angular-timeago'])
 
     $scope.messages = [];
     $scope.chat = { text : "", class: "positive" };
-
-    $scope.stats = {
-        chats : 32,
-        events: 2,
-        followers: 82,
-    };
-
 
     var refresh_messages = function() {
         $scope.messages = [];
