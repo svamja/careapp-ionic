@@ -4,7 +4,7 @@ angular.module('careapp.controllers', ['yaru22.angular-timeago'])
 
     $scope.EnvName = EnvName;
     $scope.menu_title = "Menu";
-    $scope.dashboard_refresh = true;
+    $scope.shared = { "dashboard_refresh" : true };
 
     $scope.logout = function() {
         window.localStorage.removeItem("is_logged_in");
@@ -298,9 +298,9 @@ angular.module('careapp.controllers', ['yaru22.angular-timeago'])
     var passion_ids = [];
 
     $scope.$on("$ionicView.enter", function() {
-        if($scope.dashboard_refresh) {
+        if($scope.shared.dashboard_refresh) {
             $scope.show_loading = true;
-            $scope.dashboard_refresh = false;
+            $scope.shared.dashboard_refresh = false;
             $scope.refresh();
         }
     });

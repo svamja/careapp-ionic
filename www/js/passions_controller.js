@@ -1,11 +1,20 @@
 angular.module('careapp.controllers')
 
 .controller('PassionsController', function($scope, $state, $ionicHistory, $q, $timeout, DbManager) {
-    $scope.ui_data = { button_text : "Skip" };
+    $scope.ui = { search_val : "", queried_passions: [], trigger_search: false };
     $scope.user_passions = [];
     $scope.searchModel = { value: ""};
     passion_ids = [];
     $scope.categories = [];
+    $scope.new_passion = {};
+
+    $scope.$on("$ionicView.enter", function() {
+        if($ionicHistory.currentView().stateName == "app.passions.add" &&
+            $scope.ui.trigger_search) 
+        {
+            $scope.search_passions();
+        }
+    });
 
 
     DbManager.me()
@@ -34,7 +43,6 @@ angular.module('careapp.controllers')
             {
                 return $q.reject("no_change");
             }
-            $scope.dashboard_refresh = true;
             me.passions = new_passions;
             return me;
         })
@@ -49,38 +57,49 @@ angular.module('careapp.controllers')
             $ionicHistory.nextViewOptions({
                 historyRoot: true
             });
-            $scope.dashboard_refresh = true;
+            $scope.shared.dashboard_refresh = true;
             $state.go("app.dashboard");
         })
         .catch(function(error) {
+            if(error == "no_change") {
+                $ionicHistory.nextViewOptions({
+                    historyRoot: true
+                });
+                $state.go("app.dashboard");
+                return;
+            }
             //TODO: Display error to user
             console.log(error);
         });
 
     }
 
-    $scope.queryPassions = function(str) {
-        return DbManager.get("passions_db")
+    $scope.search_passions = function() {
+        var search_val = $scope.ui.search_val;
+        if(search_val.length == 0) {
+            $scope.ui.queried_passions = [];
+        }
+        if(search_val.length < 3) return;
+        DbManager.get("passions_db")
         .then(function(passions_db) {
-            return passions_db.search({
-                query: str,
-                fields: ['name', 'search_keywords'],
-                filter: function (doc) {
-                    return doc.type === 'passion'; // only index persons
-                },
-                include_docs: true,
+            return passions_db.query("passions/by_passion", {
+                include_docs: true
             });
         })
         .then(function(res) {
-            var passions = [];
+            var queried_passions = [];
             for(i in res.rows) {
                 passion = {
                     id: res.rows[i].doc._id,
                     name: res.rows[i].doc.name
                 };
-                passions.push(passion);
+                if(passion['name'].toLowerCase().indexOf(search_val.toLowerCase()) != -1) {
+                    queried_passions.push(passion);
+                }
             }
-            return passions;
+            $scope.$apply(function() {
+                $scope.ui.queried_passions = queried_passions;
+            });
         });
     };
 
@@ -89,7 +108,7 @@ angular.module('careapp.controllers')
             $scope.user_passions.push(passion);
             passion_ids.push(passion.id);
         }
-        $scope.searchModel.value = "";
+        $scope.ui.search_val = "";
     }
 
     $scope.remove = function(passion) {
@@ -118,9 +137,8 @@ angular.module('careapp.controllers')
         console.log(obj);
     });
 
-    $scope.new_passion = {};
     $scope.add_passion = function() {
-        $scope.new_passion.name = $scope.searchModel.value;
+        $scope.new_passion.name = $scope.ui.search_val;
         $state.go("app.passions.add_1");
     }
 
@@ -138,12 +156,8 @@ angular.module('careapp.controllers')
         })
 
         // Go back to Add Passions screen
+        $scope.ui.trigger_search = true;
         $state.go("app.passions.add");
-        var prev_value = $scope.searchModel.value;
-        $scope.searchModel.value = "";
-        $timeout(function() {
-            $scope.searchModel.value = prev_value;
-        }, 1000);
 
     }
 

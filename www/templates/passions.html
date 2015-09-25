@@ -3,26 +3,7 @@
     <img src='img/logo100.png' /> Manage My Interests
   </ion-nav-title>
   <ion-content>
-    <div class="bar bar-header bar-positive item-input-inset">
-        <ion-search 
-            id="ion_search_passions"
-            class="search-wrapper-light" 
-            placeholder="I care for .." 
-            min-length="2" 
-            model="queried_passions" 
-            search-model="searchModel"
-            source="queryPassions(str)">
-        </ion-search>
-    </div>
-    <div class="list">
-      <div ng-repeat="passion in queried_passions" class="item" ng-click="add(passion)">
-            {{passion.name}}
-      </div>
-    </div>
-    <div ng-if="queried_passions.length == 0 && searchModel.value.length > 2" class="row">
-      Not found?
-      <a href="#" ng-click="add_passion()"> Add </a>
-    </div>
+
     <ion-list>
       <ion-item ng-repeat="passion in user_passions">
         <h2> {{passion.name}} </h2>
@@ -31,6 +12,23 @@
         </div>
       </ion-item>
     </ion-list>
+
+    <div class="list list-inset">
+      <label class="item item-input">
+        <i class="icon ion-search placeholder-icon"></i>
+        <input type="text" placeholder="Search to add more interests.."
+              ng-model="ui.search_val" ng-change="search_passions()">
+      </label>
+      <div ng-repeat="passion in ui.queried_passions" class="item" ng-click="add(passion)">
+            {{passion.name}}
+      </div>
+      <div ng-show="ui.queried_passions.length == 0 && ui.search_val.length > 2" class="item">
+        Not found?
+        <a href="#" ng-click="add_passion()"> Add </a>
+      </div>
+    </div>
+
+
 
   </ion-content>
   <ion-footer-bar class="bar-positive tabs tabs-calm">
