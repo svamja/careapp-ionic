@@ -3,6 +3,8 @@ angular.module('careapp.controllers', ['yaru22.angular-timeago'])
 .controller('AppController', function($scope, $state, $ionicHistory, EnvName) {
 
     $scope.EnvName = EnvName;
+    $scope.menu_title = "Menu";
+    $scope.dashboard_refresh = true;
 
     $scope.logout = function() {
         window.localStorage.removeItem("is_logged_in");
@@ -15,7 +17,7 @@ angular.module('careapp.controllers', ['yaru22.angular-timeago'])
         });
         $state.go("login.1");
     };
-    $scope.menu_title = "Menu";
+
 })
 
 .controller('HomeController', function($scope, $state, $ionicHistory) {
@@ -288,11 +290,20 @@ angular.module('careapp.controllers', ['yaru22.angular-timeago'])
 })
 
 .controller('DashboardController', function($scope, $state, $ionicHistory, DbManager) {
+
     $scope.title = "TheCareApp";
     $scope.show_loading = false;
     $scope.show_actions = true;
     $scope.cards = [];
     var passion_ids = [];
+
+    $scope.$on("$ionicView.enter", function() {
+        if($scope.dashboard_refresh) {
+            $scope.show_loading = true;
+            $scope.dashboard_refresh = false;
+            $scope.refresh();
+        }
+    });
 
     $scope.refresh = function() {
         DbManager.get("passions_db")
@@ -349,9 +360,6 @@ angular.module('careapp.controllers', ['yaru22.angular-timeago'])
         })
         ;
     };
-
-    $scope.refresh();
-    $scope.show_loading = true;
 
 })
 

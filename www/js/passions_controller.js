@@ -18,29 +18,38 @@ angular.module('careapp.controllers')
         }
     });
 
-    $scope.done = function() {
-        DbManager.get("profiles_db")
-        .then(function(profiles_db) {
-            return profiles_db.upsert(window.localStorage.user_id, function(doc) {
-                if(!doc.type) {
-                    doc["type"] = "profile";
-                }
-                doc["passions"] = [];
-                for(i in $scope.user_passions) {
-                    user_passion = {};
-                    user_passion['id'] = $scope.user_passions[i]['id'];
-                    user_passion['name'] = $scope.user_passions[i]['name'];
-                    doc.passions.push(user_passion);
-                }
-                return doc;
+    $scope.save = function() {
+        // Check if there is any change detected
+        DbManager.me()
+        .then(function(me) {
+            var new_passions = [];
+            for(i in $scope.user_passions) {
+                user_passion = {};
+                user_passion['id'] = $scope.user_passions[i]['id'];
+                user_passion['name'] = $scope.user_passions[i]['name'];
+                new_passions.push(user_passion);
+            }
+            if(me && me.passions && 
+                JSON.stringify(new_passions) == JSON.stringify(me.passions))
+            {
+                return $q.reject("no_change");
+            }
+            $scope.dashboard_refresh = true;
+            me.passions = new_passions;
+            return me;
+        })
+        .then(function(me) {
+            return DbManager.get("profiles_db")
+            .then(function(profiles_db) {
+                return profiles_db.put(me);
             });
         })
         .then(function(res) {
-            DbManager.passion_ids(true); // Background refresh of local profile
-            window.localStorage.has_passions = 1;
+            DbManager.sync(true); // background sync of user profile
             $ionicHistory.nextViewOptions({
                 historyRoot: true
             });
+            $scope.dashboard_refresh = true;
             $state.go("app.dashboard");
         })
         .catch(function(error) {

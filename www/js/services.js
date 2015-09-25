@@ -99,6 +99,7 @@ angular.module('careapp.services', ['careapp.constants'])
     };
 
     var sync = function(db_id) {
+        console.log("sync init: " + db_id);
         if(!dbs[db_id]) {
             return $q.reject("Invalid db_id");
         }
@@ -134,12 +135,11 @@ angular.module('careapp.services', ['careapp.constants'])
         if(!dbs[db_id]) {
             return $q.reject("Invalid db_id");
         }
-        if(dbs[db_id].promise && !refresh) {
-            return dbs[db_id].promise;
-        }
         if(!refresh) {
-            var local_db = new PouchDB(dbs[db_id].name);
-            return $q.when(local_db);
+            return get_local(db_id);
+        }
+        if(dbs[db_id].promise) {
+            return dbs[db_id].promise;
         }
         return sync(db_id);
     };
@@ -160,35 +160,20 @@ angular.module('careapp.services', ['careapp.constants'])
     };
 
     var me = function(refresh) {
-        if(window.localStorage.profile_me && !refresh)
-        {
-            var profile_me = JSON.parse(window.localStorage.profile_me);
-            return $q.when(profile_me);
-        }
         return get("profiles_db", refresh)
         .then(function(profiles_db) {
             return profiles_db.get(window.localStorage.user_id);
-        })
-        .then(function(profile_me) {
-            window.localStorage.profile_me = JSON.stringify(profile_me);
-            return profile_me;
         })
         ;
     };
 
     var passion_ids = function(refresh) {
-        if(window.localStorage.passion_ids && !refresh)
-        {
-            var passion_ids = JSON.parse(window.localStorage.passion_ids);
-            return $q.when(passion_ids);
-        }
         return me(refresh)
         .then(function(profile_me) {
             var passion_ids = [];
             for(i in profile_me.passions) {
                 passion_ids.push(profile_me.passions[i].id);
             }
-            window.localStorage.passion_ids = JSON.stringify(passion_ids);
             return passion_ids;
         })
         ;
