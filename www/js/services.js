@@ -49,59 +49,43 @@ angular.module('careapp.services', ['careapp.constants'])
     };
 
     var dbs = {
-
         "users_db" : {
             name: "_users",
             remote_only: true
         },
 
         "messages_db" : {
-            name : "careapp_messages_db",
-            options :
-            {
-                // filter: 'filters/by_passions',
-                // query_params: 
-                // {
-                //     "passions": window.localStorage.user_passions, 
-                //     "city" :  window.localStorage.user_city
-                // }
-            },
-            promise : false
+            name : "careapp_messages_db"
         },
 
         "passions_db" : {
-            name : "careapp_passions_db",
-            options : {},
-            promise : false
+            name : "careapp_passions_db"
         },
 
         "locations_db" : {
-            name : "careapp_locations_db",
-            options : {},
-            promise : false
+            name : "careapp_locations_db"
         },
 
         "profiles_db" : {
-            name : "careapp_profiles_db",
-            options :
-            {
-                // filter: 'filters/by_user',
-                // query_params: 
-                // {
-                //     "user_id" : window.localStorage.user_id,
-                //     "passions": window.localStorage.user_passions,
-                //     "city" :  window.localStorage.user_city
-                // }
-            },
-            promise : false
+            name : "careapp_profiles_db"
         }
-
     };
+
+    for(db_id in dbs) {
+        dbs[db_id].promise = false;
+        dbs[db_id].sync_in_progress = false;
+        if(!dbs[db_id].options) {
+            dbs[db_id].options = {};
+        }
+    }
 
     var sync = function(db_id) {
         console.log("sync init: " + db_id);
         if(!dbs[db_id]) {
             return $q.reject("Invalid db_id");
+        }
+        if(dbs[db_id].sync_in_progress) {
+            return dbs[db_id].promise;
         }
         var auth_options = {
             username: window.localStorage.user_id,
@@ -120,12 +104,17 @@ angular.module('careapp.services', ['careapp.constants'])
             auth: auth_options
         });
         var options = {};
+        dbs[db_id].sync_in_progress = true;
+        var sync_start_time = Date.now();
         local_db.sync(remote_db, options)
         .on('complete', function() {
             deferred.resolve(local_db);
+            dbs[db_id].sync_in_progress = false;
+            console.log("sync time: " + db_id + " : " + (Date.now()- sync_start_time) + " ms.");
         })
         .on('error', function(error) {
             deferred.reject(error);
+            dbs[db_id].sync_in_progress = false;
         });
         dbs[db_id].promise = deferred.promise;
         return dbs[db_id].promise;

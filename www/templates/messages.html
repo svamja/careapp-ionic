@@ -2,7 +2,7 @@
   <ion-nav-title>
     <img src='img/logo100.png' /> {{passion.name}}
   </ion-nav-title>
-  <ion-content>
+  <ion-content delegate-handle="messages-content">
 
     <div class="row">
       <div class="col center calm">
@@ -28,10 +28,10 @@
     <ion-list>
       <ion-item ng-repeat="message in messages" class="item-avatar">
         <img ng-src="{{message.fb_picture}}">
-        <p ng-bind-html="message.text"> 
+        <p class="message-text" ng-bind-html="message.text"> 
         </p>
         <p>
-          sent by {{message.author_name}} {{message.posted_on | timeAgo}}
+          {{message.author_name}}, {{message.posted_on | timeAgo}}
         </p>
       </ion-item>
     </ion-list>

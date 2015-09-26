@@ -21,47 +21,70 @@ angular.module('careapp.controllers')
 
 })
 
-.controller('MessagesController', function($scope, $state, $stateParams, $ionicHistory, DbManager) {
+.controller('MessagesController', function($scope, $state, $stateParams, 
+                    $timeout, $ionicHistory, $ionicScrollDelegate, DbManager)
+{
 
     $scope.messages = [];
     $scope.chat = { text : "", class: "positive" };
+    var last_ts = 0;
+
+    DbManager.me()
+    .then(function(profile_me) {
+        $scope.profile_me = profile_me;
+    });
+
+    var my_state_name = $ionicHistory.currentView().stateName;
+    var scroll_handle = $ionicScrollDelegate.$getByHandle('messages-content');
+    var scroll_animation = false;
 
     var refresh_messages = function() {
-        $scope.messages = [];
-        DbManager.get("messages_db", true)
+        if($ionicHistory.currentView().stateName != my_state_name) return;
+        DbManager.get_local("messages_db")
         .then(function(messages_db) {
             return messages_db.query("messages/by_passion_ts", {
-                startkey : [$stateParams.passion_id, 1],
+                startkey : [$stateParams.passion_id, last_ts + 1],
                 endkey : [$stateParams.passion_id, Date.now() + 1000000],
             });
         })
         .then(function(result) {
+            if(!result.rows || result.rows.length == 0) {
+                return;
+            }
             for(i in result.rows) {
                 var message = result.rows[i].value;
                 message.text = message.text.replace(/(?:\r\n|\r|\n)/g, '<br />');
                 $scope.messages.push(message);
+                last_ts = message.posted_on;
             }
+            $timeout(function() {
+                scroll_handle.scrollBottom(scroll_animation);
+                if(!scroll_animation) {
+                    scroll_animation = true;
+                }
+            }, 50);
         })
         .catch(function(err) {
             console.log(err);
             //TODO: Show Error
         });
+        DbManager.sync("messages_db"); // background sync of messages
+        $timeout(refresh_messages, 3000);
     };
 
     $scope.send_message = function() {
+        if(!$scope.profile_me) return; // wait until user profile loads up
+
         DbManager.get("messages_db")
         .then(function(messages_db) {
-            return DbManager.me()
-            .then(function(profile_me) {
-                return messages_db.post({
-                    passion_id: $stateParams.passion_id,
-                    author_id: profile_me._id,
-                    author_name: profile_me.display_name,
-                    city: profile_me.city,
-                    fb_picture: profile_me.fb_picture,
-                    text: $scope.chat.text,
-                    posted_on: Date.now()
-                });
+            return messages_db.post({
+                passion_id: $stateParams.passion_id,
+                author_id: $scope.profile_me._id,
+                author_name: $scope.profile_me.display_name,
+                city: $scope.profile_me.city,
+                fb_picture: $scope.profile_me.fb_picture,
+                text: $scope.chat.text,
+                posted_on: Date.now()
             });
         })
         .then(function() {

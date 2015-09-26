@@ -1,6 +1,10 @@
 angular.module('careapp.controllers', ['yaru22.angular-timeago'])
 
 .controller('AppController', function($scope, $state, $ionicHistory, EnvName) {
+    
+    if(EnvName == 'prod') { // quiet console log for live env
+        console.log = function() {};
+    }
 
     $scope.EnvName = EnvName;
     $scope.menu_title = "Menu";

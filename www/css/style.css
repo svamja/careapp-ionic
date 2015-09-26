@@ -16,6 +16,12 @@
     color: inherit;
 }
 
+/* Messages */
+
+.item p.message-text {
+    color: black;
+}
+
 /* Sync Progress Bar */
 /*
 Taken from - http://tobiasahlin.com/spinkit/
