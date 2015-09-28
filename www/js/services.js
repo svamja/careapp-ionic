@@ -58,6 +58,10 @@ angular.module('careapp.services', ['careapp.constants'])
             name : "careapp_messages_db"
         },
 
+        "events_db" : {
+            name : "careapp_events_db"
+        },
+
         "passions_db" : {
             name : "careapp_passions_db"
         },

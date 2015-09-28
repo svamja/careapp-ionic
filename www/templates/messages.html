@@ -4,27 +4,6 @@
   </ion-nav-title>
   <ion-content delegate-handle="messages-content">
 
-    <div class="row">
-      <div class="col center calm">
-        <span ng-click="switch_to('messages')">
-          <i class="icon ion-ios-chatboxes" style="font-size: 1.6em;"></i> 
-          <span ng-show="stats.chats > 0" style="font-size: 0.9em; "> {{stats.chats}} </span>
-        </span>
-      </div>
-      <div class="col center dark">
-        <span ng-click="switch_to('events')">
-          <i class="icon ion-ios-calendar" style="font-size: 1.6em;"></i> 
-          <span ng-show="stats.events > 0" style="font-size: 0.9em; "> {{stats.events}} </span>
-        </span>
-      </div>
-      <div class="col center dark">
-        <span ng-click="switch_to('members')">
-          <i class="icon ion-person-stalker" style="font-size: 1.6em;"></i> 
-          <span style="font-size: 0.9em; "> {{stats.followers}} </span>
-        </span>
-      </div>
-    </div>
-
     <ion-list>
       <ion-item ng-repeat="message in messages" class="item-avatar">
         <img ng-src="{{message.fb_picture}}">
@@ -37,12 +16,12 @@
     </ion-list>
   </ion-content>
 
-  <ion-footer-bar class="bar-stable" style="height: auto;">
+  <ion-footer-bar style="height: auto;">
     <label class="item item-input" style="width: 100%;">
       <textarea ng-model="chat.text" expanding-textarea ng-class="chat_class"></textarea>
     </label>
     <div ng-click="send_message()" style="padding: 6px 12px 0px 12px;">
-      <i class="icon ion-chevron-right"></i>
+      <i class="icon ion-chevron-right" style="font-size: 2em;"></i>
     </div>
   </ion-footer-bar>
 

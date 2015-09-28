@@ -2,6 +2,12 @@ angular.module('careapp.controllers')
 
 .controller('FeedController', function($scope, $state, $stateParams, $ionicHistory, DbManager) {
 
+    $scope.ui = {};
+    $scope.ui.class = {
+        "messages" : "dark",
+        "events" : "dark",
+        "members" : "dark"
+    };
     var passion_id = $stateParams.passion_id;
     $scope.passion_id = passion_id;
     DbManager.get("passions_db")
@@ -17,6 +23,12 @@ angular.module('careapp.controllers')
             disableAnimate: true
         });
         $state.go("app.feed." + sub_state, { passion_id: passion_id });
+        $scope.ui.class = {
+            "messages" : "dark",
+            "events" : "dark",
+            "members" : "dark"
+        };
+        $scope.ui.class[sub_state] = "calm";
     };
 
 })
@@ -27,6 +39,7 @@ angular.module('careapp.controllers')
 
     $scope.messages = [];
     $scope.chat = { text : "", class: "positive" };
+    $scope.ui.class.messages = "calm";
     var last_ts = 0;
 
     DbManager.me()
@@ -104,6 +117,7 @@ angular.module('careapp.controllers')
 .controller('MembersController', function($scope, $state, $stateParams, $ionicHistory, DbManager) {
 
     $scope.members = [];
+    $scope.ui.class.members = "calm";
     DbManager.get("profiles_db")
     .then(function(profiles_db) {
         return profiles_db.query("profiles/by_passion", {
@@ -122,6 +136,35 @@ angular.module('careapp.controllers')
     })
     ;
 
+})
+
+.controller('EventsController', function($scope, $state, $stateParams, $ionicHistory, DbManager) {
+    // alternate - happenings
+    $scope.ui.class.events = "calm";
+    $scope.events = [];
+    var last_ts = 0;
+    DbManager.get_local("events_db")
+    .then(function(events_db) {
+        return events_db.allDocs();
+        // return events_db.query("events/by_passion_ts", {
+        //     startkey : [$stateParams.passion_id, last_ts + 1],
+        //     endkey : [$stateParams.passion_id, Date.now() + 1000000],
+        // });
+    })
+    .then(function(result) {
+        if(!result.rows || result.rows.length == 0) {
+            return;
+        }
+        for(i in result.rows) {
+            var event = result.rows[i].value;
+            $scope.events.push(event);
+            last_ts = event.start_time;
+        }
+    })
+    .catch(function(err) {
+        console.log(err);
+        //TODO: Show Error
+    });
 })
 
 ;

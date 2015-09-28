@@ -1,13 +1,24 @@
-<ion-view>
-  <ion-tabs class="tabs-striped tabs-top">
-   
-    <ion-tab title="Messages" href="#/feed/{{passion_id}}/messages">
-      <ion-nav-view name="tab-messages"></ion-nav-view>
-    </ion-tab>
-
-    <ion-tab title="Members" href="#/feed/{{passion_id}}/members">
-      <ion-nav-view name="tab-members"></ion-nav-view>
-    </ion-tab>
-
-  </ion-tabs>
-</ion-view>
+<ion-nav-view>
+  <ion-header-bar class="bar-subheader">
+    <div class="row">
+      <div class="col center" ng-class="ui.class.messages">
+        <span ng-click="switch_to('messages')">
+          <i class="icon ion-ios-chatboxes" style="font-size: 1.6em;"></i> 
+          <span ng-show="stats.chats > 0" style="font-size: 0.9em; "> {{stats.chats}} </span>
+        </span>
+      </div>
+      <div class="col center" ng-class="ui.class.events">
+        <span ng-click="switch_to('events')">
+          <i class="icon ion-ios-calendar" style="font-size: 1.6em;"></i> 
+          <span ng-show="stats.events > 0" style="font-size: 0.9em; "> {{stats.events}} </span>
+        </span>
+      </div>
+      <div class="col center" ng-class="ui.class.members">
+        <span ng-click="switch_to('members')">
+          <i class="icon ion-person-stalker" style="font-size: 1.6em;"></i> 
+          <span style="font-size: 0.9em; "> {{stats.followers}} </span>
+        </span>
+      </div>
+    </div>
+  </ion-header-bar>
+</ion-nav-view>

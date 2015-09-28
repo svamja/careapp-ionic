@@ -111,7 +111,7 @@ angular.module('careapp', ['ionic', /*'ionic.service.core','ionic.service.analyt
         cache: false,
         views: {
             'mainContent': {
-                template: '<ion-nav-view></ion-nav-view>',
+                templateUrl: 'templates/feed.html',
                 controller: "FeedController"
             }
         }
@@ -127,6 +127,12 @@ angular.module('careapp', ['ionic', /*'ionic.service.core','ionic.service.analyt
         url: '/members',
         templateUrl: 'templates/members.html',
         controller: 'MembersController'
+    })
+
+    .state('app.feed.events', {
+        url: '/events',
+        templateUrl: 'templates/events.html',
+        controller: 'EventsController'
     })
 
     ;
