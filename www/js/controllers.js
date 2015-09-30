@@ -117,6 +117,8 @@ angular.module('careapp.controllers', ['yaru22.angular-timeago'])
             $scope.syncs['messages'] = 'error';
         });
 
+        // Sync without tracking progress -
+        DbManager.sync("events_db");
 
         DbManager.get_remote("passions_db").info().then(function(result) {
             $scope.progress.passions.max = result.doc_count;

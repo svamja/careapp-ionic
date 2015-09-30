@@ -28,8 +28,14 @@ angular.module('careapp.controllers')
             "events" : "dark",
             "members" : "dark"
         };
-        $scope.ui.class[sub_state] = "calm";
+        if(sub_state == 'create_event') {
+            $scope.ui.class['events'] = "calm";
+        }
+        else {
+            $scope.ui.class[sub_state] = "calm";
+        }
     };
+
 
 })
 
@@ -133,38 +139,93 @@ angular.module('careapp.controllers')
     .catch(function(err) {
         console.log(err);
         //TODO: Show Error
-    })
-    ;
+    });
 
 })
 
 .controller('EventsController', function($scope, $state, $stateParams, $ionicHistory, DbManager) {
-    // alternate - happenings
     $scope.ui.class.events = "calm";
+    $scope.ui.centered_button = false;
+    $scope.ui.footer_button = false;
     $scope.events = [];
     var last_ts = 0;
-    DbManager.get_local("events_db")
-    .then(function(events_db) {
-        return events_db.allDocs();
-        // return events_db.query("events/by_passion_ts", {
-        //     startkey : [$stateParams.passion_id, last_ts + 1],
-        //     endkey : [$stateParams.passion_id, Date.now() + 1000000],
-        // });
-    })
-    .then(function(result) {
-        if(!result.rows || result.rows.length == 0) {
+    var tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    $scope.new_event = {
+        start_date: tomorrow,
+        start_time: new Date(1970, 0, 1, 10, 00, 0),
+        passion_id: $stateParams.passion_id,
+        author_id: window.localStorage.user_id
+    };
+
+    var get_events = function() {
+        DbManager.get_local("events_db")
+        .then(function(events_db) {
+            // Upcoming Events
+            var options = {
+                startkey : [$stateParams.passion_id, Date.now() - 3600 ],
+                endkey : [$stateParams.passion_id, Date.now() + 31536000000]
+            };
+            console.log(options);
+            return events_db.query("events/by_passion_ts", options);
+
+        })
+        .then(function(result) {
+            console.log(result);
+            if(result.rows && result.rows.length > 0) {
+                $scope.$apply(function() {
+                    $scope.events = [];
+                    for(i in result.rows) {
+                        var event = result.rows[i].value;
+                        $scope.events.push(event);
+                        last_ts = event.start_time;
+                    }
+                })
+            }
+            $scope.ui.footer_button = $scope.events.length > 0;
+            $scope.ui.centered_button = !$scope.ui.footer_button;
+        })
+        .catch(function(err) {
+            console.log(err);
+            //TODO: Show Error
+        });
+        DbManager.sync("events_db");
+    };
+
+    $scope.$on("$ionicView.enter", function() {
+        if($ionicHistory.currentView().stateName == "app.feed.events")
+        {
+            get_events();
+        }
+    });
+
+    $scope.create_event = function(form) {
+        if(form.$invalid) {
             return;
         }
-        for(i in result.rows) {
-            var event = result.rows[i].value;
-            $scope.events.push(event);
-            last_ts = event.start_time;
-        }
-    })
-    .catch(function(err) {
-        console.log(err);
-        //TODO: Show Error
-    });
+        DbManager.get_local("events_db")
+        .then(function(events_db) {
+            var new_event = angular.copy($scope.new_event);
+            var date_time = angular.copy(new_event.start_date);
+            date_time.setHours(new_event.start_time.getHours());
+            date_time.setMinutes(new_event.start_time.getMinutes());
+            date_time.setSeconds(0);
+            new_event.type = 'event';
+            new_event.start_ts = date_time.getTime();
+            delete new_event.start_date;
+            delete new_event.start_time;
+            return events_db.post(new_event);
+        })
+        .then(function(result) {
+            $state.go("app.feed.events");
+        })
+        .catch(function(err) {
+            console.log(err);
+            //TODO: Show Error
+        });
+    };
+
+
 })
 
 ;

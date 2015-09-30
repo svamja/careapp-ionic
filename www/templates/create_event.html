@@ -1,0 +1,38 @@
+<ion-view>
+  <ion-nav-title>
+    <img src='img/logo100.png' /> {{passion.name}}
+  </ion-nav-title>
+  <ion-content>
+
+    <div class="row inset-header">
+      New Event
+    </div>
+
+    <form name="form_create_event">
+      <div class="list list-inset">
+        <label class="item item-input">
+          <input type="text" placeholder="Title" name="title" ng-model="new_event.title" required />
+        </label>
+        <label class="item item-input">
+          <input type="date" placeholder="Start Date" name="start_date" ng-model="new_event.start_date" required />
+        </label>
+        <label class="item item-input">
+          <input type="time" placeholder="Start Time" name="start_time" ng-model="new_event.start_time" required />
+        </label>
+        <label class="item item-input">
+          <input type="text" placeholder="Location" name="location" ng-model="new_event.location" required />
+        </label>
+        <label class="item item-input">
+          <textarea placeholder="Description" name="description" rows="8" ng-model="new_event.description" required></textarea>
+        </label>
+      </div>
+
+      <div class="row">
+        <button class="button button-block button-calm" ng-click="create_event(form_create_event)">
+          Create Event
+        </button>
+      </div>
+    </form>
+
+  </ion-content>
+</ion-view>

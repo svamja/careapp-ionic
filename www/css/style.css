@@ -22,6 +22,14 @@
     color: black;
 }
 
+/* Events */
+
+.inset-header {
+    font-size: 1.6em;
+    padding: 20px 10px 5px 14px;
+}
+
+
 /* Sync Progress Bar */
 /*
 Taken from - http://tobiasahlin.com/spinkit/

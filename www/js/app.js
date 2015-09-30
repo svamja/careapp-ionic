@@ -135,6 +135,11 @@ angular.module('careapp', ['ionic', /*'ionic.service.core','ionic.service.analyt
         controller: 'EventsController'
     })
 
+    .state('app.feed.create_event', {
+        url: '/create_event',
+        templateUrl: 'templates/create_event.html',
+        controller: 'EventsController'
+    })
     ;
 
 
