@@ -3,16 +3,17 @@
     <img src='img/logo100.png' /> {{passion.name}}
   </ion-nav-title>
   <ion-content>
-    <div class="row padding">
-      <h4> Upcoming Events </h4>
+    <div ng-show="events.length > 0">
+      <div class="row padding">
+        <h4> Upcoming Events </h4>
+      </div>
+      <ion-list>
+        <ion-item ng-repeat="event in events">
+          <h2> {{event.title}} </h2>
+          <p> {{ event.start_ts | date : "dd MMM yyyy (EEE) 'at' h:mm a" }} </p>
+        </ion-item>
+      </ion-list>
     </div>
-    <ion-list>
-      <ion-item ng-repeat="event in events">
-        <h2> {{event.title}} </h2>
-        <!-- <p> {{ event.start_date }} {{event.start_time }} </p> -->
-        <p> {{ event.start_ts | date : "dd MMM yyyy (EEE) 'at' h:mm a" }} </p>
-      </ion-item>
-    </ion-list>
 
     <div class="row" style="padding-top: 40%;" ng-show="ui.centered_button">
       <button class="button button-block button-calm" ng-click="switch_to('create_event')">

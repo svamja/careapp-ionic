@@ -107,6 +107,7 @@ angular.module('careapp.services', ['careapp.constants'])
         var remote_db = new PouchDB(remote_base_url + dbs[db_id].name, {
             auth: auth_options
         });
+        //TODO: Wait for the remote_db connection to be successful, before starting sync
         var options = {};
         dbs[db_id].sync_in_progress = true;
         var sync_start_time = Date.now();
